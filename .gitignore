@@ -12,8 +12,8 @@ dist/
 .coverage
 htmlcov/
 
-data/
-models/
+/data/
+/models/
 *.db
 *.sqlite3
 *.joblib
