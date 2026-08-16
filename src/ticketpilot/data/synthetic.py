@@ -41,6 +41,46 @@ def render_core(rng: random.Random, intent: str, order_id: str) -> str:
     )
 
 
+def luhn_card(rng: random.Random, prefix: str = "4") -> str:
+    digits = [int(char) for char in prefix] + [rng.randint(0, 9) for _ in range(15 - len(prefix))]
+    total = 0
+    for position, digit in enumerate(reversed(digits)):
+        if position % 2 == 0:
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        total += digit
+    check = (10 - total % 10) % 10
+    return "".join(str(digit) for digit in digits) + str(check)
+
+
+def make_phone(rng: random.Random) -> str:
+    area, mid, last = rng.randint(201, 989), rng.randint(200, 999), rng.randint(1000, 9999)
+    return rng.choice([f"+1 {area} {mid} {last}", f"({area}) {mid}-{last}", f"+44 7{rng.randint(100, 999)} {rng.randint(100000, 999999)}"])
+
+
+def make_signature(rng: random.Random, name: str, email: str, intent: str) -> str:
+    lines = [name]
+    if rng.random() < 0.4:
+        lines.append(email)
+    if rng.random() < 0.3:
+        lines.append(f"Phone: {make_phone(rng)}")
+    if intent in ("billing_refund", "invoice_request") and rng.random() < 0.25:
+        card = luhn_card(rng)
+        lines.append(rng.choice([f"Card on file ends in {card[-4:]}", f"Card used: {card[:4]} {card[4:8]} {card[8:12]} {card[12:]}"]))
+    if intent == "security_report" and rng.random() < 0.5:
+        lines.append(f"Seen from IP 203.0.113.{rng.randint(2, 250)}")
+    return "\n".join(lines)
+
+
+def compose_message(rng: random.Random, core: str, name: str, email: str, intent: str) -> str:
+    parts = [rng.choice(GREETINGS), core, rng.choice(CLOSINGS)]
+    message = "\n".join(part for part in parts if part)
+    if rng.random() < 0.55:
+        message = f"{message}\n{make_signature(rng, name, email, intent)}"
+    return message
+
+
 PRIORITY_WEIGHTS: dict[str, tuple[float, float, float, float]] = {
     "security_report": (0.0, 0.1, 0.35, 0.55),
     "account_locked": (0.0, 0.15, 0.5, 0.35),
@@ -92,6 +132,29 @@ def flip_priority(rng: random.Random, priority: str) -> str:
     return PRIORITIES[rng.choice(options)]
 
 
+GREETINGS = ["Hi,", "Hello,", "Hi team,", "Hey,", "Good morning,", "Hello support,", "", ""]
+CLOSINGS = ["Thanks,", "Regards,", "Best,", "Thank you!", "Cheers,", "", ""]
+
+
+def add_typos(rng: random.Random, text: str, rate: float = 0.03) -> str:
+    words = text.split(" ")
+    for position, word in enumerate(words):
+        if len(word) < 4 or rng.random() > rate:
+            continue
+        cut = rng.randint(1, len(word) - 2)
+        if rng.random() < 0.5:
+            words[position] = word[:cut] + word[cut + 1] + word[cut] + word[cut + 2:]
+        else:
+            words[position] = word[:cut] + word[cut + 1:]
+    return " ".join(words)
+
+
+def distractor(rng: random.Random, intent: str, order_id: str) -> str:
+    other = rng.choice([name for name in INTENTS if name != intent])
+    sentence = render_core(rng, other, order_id)
+    return "Also, " + sentence[0].lower() + sentence[1:]
+
+
 def make_ticket(rng: random.Random, index: int, intent: str | None = None) -> Ticket:
     intent = intent or rng.choice(INTENTS)
     cue_priority = sample_priority(rng, intent)
@@ -103,6 +166,13 @@ def make_ticket(rng: random.Random, index: int, intent: str | None = None) -> Ti
     cue = rng.choice(PRIORITY_CUES[cue_priority])
     if cue:
         body = f"{body} {cue}" if rng.random() < 0.7 else f"{cue} {body}"
+    if rng.random() < 0.15:
+        body = f"{body} {distractor(rng, intent, order_id)}"
+    if rng.random() < 0.35:
+        body = add_typos(rng, body)
+    if rng.random() < 0.12:
+        body = body.lower()
+    body = compose_message(rng, body, f"{first} {last}", email, intent)
     priority = flip_priority(rng, cue_priority) if rng.random() < LABEL_NOISE else cue_priority
     entity = order_id if intent in ORDER_INTENTS else email
     created = datetime(2026, 1, 1) + timedelta(minutes=rng.randint(0, 60 * 24 * 120))
