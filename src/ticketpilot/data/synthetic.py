@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timedelta
 
 from ticketpilot.data.schemas import PRIORITIES, Ticket
-from ticketpilot.data.templates import CORES_EN, INTENTS, ORDER_INTENTS, SUBJECTS
+from ticketpilot.data.templates import CORES_EN, CORES_FOREIGN, INTENTS, ORDER_INTENTS, SUBJECTS
 
 FIRST_NAMES = [
     "Maya", "Daniel", "Priya", "Lucas", "Hannah", "Omar", "Elena", "Tomas", "Aisha", "Ben",
@@ -32,8 +32,9 @@ def make_order_id(rng: random.Random) -> str:
     return f"ORD-{rng.randint(10000, 99999)}"
 
 
-def render_core(rng: random.Random, intent: str, order_id: str) -> str:
-    template = rng.choice(CORES_EN[intent])
+def render_core(rng: random.Random, intent: str, order_id: str, language: str = "en") -> str:
+    pool = CORES_EN[intent] if language == "en" else CORES_FOREIGN[language][intent]
+    template = rng.choice(pool)
     return template.format(
         order=order_id,
         amount=f"${rng.choice(AMOUNTS):.2f}",
@@ -155,18 +156,23 @@ def distractor(rng: random.Random, intent: str, order_id: str) -> str:
     return "Also, " + sentence[0].lower() + sentence[1:]
 
 
-def make_ticket(rng: random.Random, index: int, intent: str | None = None) -> Ticket:
+def make_ticket(
+    rng: random.Random,
+    index: int,
+    intent: str | None = None,
+    language: str = "en",
+) -> Ticket:
     intent = intent or rng.choice(INTENTS)
     cue_priority = sample_priority(rng, intent)
     first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
     email = make_email(rng, first, last)
     order_id = make_order_id(rng)
     subject = rng.choice(SUBJECTS[intent]).format(order=order_id)
-    body = render_core(rng, intent, order_id)
-    cue = rng.choice(PRIORITY_CUES[cue_priority])
+    body = render_core(rng, intent, order_id, language)
+    cue = rng.choice(PRIORITY_CUES[cue_priority]) if language == "en" else ""
     if cue:
         body = f"{body} {cue}" if rng.random() < 0.7 else f"{cue} {body}"
-    if rng.random() < 0.15:
+    if language == "en" and rng.random() < 0.15:
         body = f"{body} {distractor(rng, intent, order_id)}"
     if rng.random() < 0.35:
         body = add_typos(rng, body)
@@ -182,6 +188,7 @@ def make_ticket(rng: random.Random, index: int, intent: str | None = None) -> Ti
         body=body,
         from_email=email,
         from_name=f"{first} {last}",
+        language=language,
         created_at=created.isoformat(timespec="minutes"),
         intent=intent,
         priority=priority,
@@ -189,6 +196,10 @@ def make_ticket(rng: random.Random, index: int, intent: str | None = None) -> Ti
     )
 
 
-def generate_tickets(count: int, seed: int = 13) -> list[Ticket]:
+def generate_tickets(count: int, seed: int = 13, foreign_share: float = 0.0) -> list[Ticket]:
     rng = random.Random(seed)
-    return [make_ticket(rng, index) for index in range(count)]
+    tickets = []
+    for index in range(count):
+        language = rng.choice(list(CORES_FOREIGN)) if rng.random() < foreign_share else "en"
+        tickets.append(make_ticket(rng, index, language=language))
+    return tickets

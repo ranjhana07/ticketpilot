@@ -117,3 +117,48 @@ CORES_EN: dict[str, list[str]] = {
 }
 
 INTENTS = tuple(CORES_EN)
+
+CORES_FOREIGN: dict[str, dict[str, list[str]]] = {
+    "es": {
+        "billing_refund": ["Me cobraron {amount} por el pedido {order} y quiero que me devuelvan el dinero."],
+        "order_status": ["El pedido {order} sigue pendiente, ¿cuándo se activará el complemento?"],
+        "invoice_request": ["Necesito la factura del pedido {order} para el departamento de contabilidad."],
+        "password_reset": ["No puedo iniciar sesión y no me llega el correo para restablecer la contraseña."],
+        "account_locked": ["Mi cuenta está bloqueada después de varios intentos de acceso."],
+        "cancel_subscription": ["Quiero cancelar mi suscripción antes de la próxima renovación."],
+        "change_plan": ["Nos gustaría pasar al plan {plan}, ¿qué cambia en la facturación?"],
+        "bug_report": ["La vista de tablero se cierra sola cuando muevo una tarjeta a una columna filtrada."],
+        "feature_request": ["Sería muy útil que añadieran una vista de Gantt para los proyectos."],
+        "data_export": ["Necesito exportar todos los datos de nuestro espacio de trabajo para una auditoría."],
+        "security_report": ["Creo que alguien ha entrado en nuestra cuenta, hay accesos desde un país desconocido."],
+        "general_question": ["¿Cuál es el horario de atención al cliente?"],
+    },
+    "fr": {
+        "billing_refund": ["On m'a facturé {amount} pour la commande {order}, je souhaite être remboursé."],
+        "order_status": ["La commande {order} est toujours en attente, quand sera-t-elle activée ?"],
+        "invoice_request": ["Pourriez-vous m'envoyer la facture de la commande {order} pour la comptabilité ?"],
+        "password_reset": ["Je n'arrive pas à me connecter et je ne reçois pas l'e-mail de réinitialisation du mot de passe."],
+        "account_locked": ["Mon compte est bloqué après plusieurs tentatives de connexion."],
+        "cancel_subscription": ["Je voudrais résilier mon abonnement avant le prochain renouvellement."],
+        "change_plan": ["Nous voudrions passer au forfait {plan}, que change-t-il pour la facturation ?"],
+        "bug_report": ["La vue tableau plante quand je déplace une carte dans une colonne filtrée."],
+        "feature_request": ["Ce serait formidable d'ajouter une vue Gantt pour les projets."],
+        "data_export": ["J'ai besoin d'exporter toutes les données de notre espace de travail pour un audit."],
+        "security_report": ["Je pense que quelqu'un d'autre a accédé à notre compte, il y a des connexions depuis un pays inconnu."],
+        "general_question": ["Quels sont vos horaires de support ?"],
+    },
+    "de": {
+        "billing_refund": ["Mir wurden {amount} für die Bestellung {order} berechnet, bitte erstatten Sie den Betrag."],
+        "order_status": ["Die Bestellung {order} ist immer noch ausstehend, wann wird das Add-on aktiviert?"],
+        "invoice_request": ["Könnten Sie mir die Rechnung für die Bestellung {order} für die Buchhaltung schicken?"],
+        "password_reset": ["Ich kann mich nicht anmelden und die E-Mail zum Zurücksetzen des Passworts kommt nicht an."],
+        "account_locked": ["Mein Konto ist nach mehreren Anmeldeversuchen gesperrt worden."],
+        "cancel_subscription": ["Ich möchte mein Abonnement vor der nächsten Verlängerung kündigen."],
+        "change_plan": ["Wir würden gern auf den Tarif {plan} wechseln, was ändert sich bei der Abrechnung?"],
+        "bug_report": ["Die Boardansicht stürzt ab, wenn ich eine Karte in eine gefilterte Spalte ziehe."],
+        "feature_request": ["Es wäre toll, wenn Sie eine Gantt-Ansicht für Projekte hinzufügen würden."],
+        "data_export": ["Ich brauche einen vollständigen Export unserer Arbeitsbereichsdaten für ein Audit."],
+        "security_report": ["Ich glaube, jemand anderes hat auf unser Konto zugegriffen, es gibt Anmeldungen aus einem unbekannten Land."],
+        "general_question": ["Wie sind Ihre Supportzeiten?"],
+    },
+}
