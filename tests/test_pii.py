@@ -48,3 +48,28 @@ def test_iban_checksum():
 
 def test_version_numbers_are_not_ips():
     assert redact("running build 2.4.1.7.9").spans == []
+
+
+def test_names_after_intro_and_sign_off():
+    assert "[NAME_1]" in redact("Hi, my name is Maya Reed and I need help").text
+    signed = redact("Please help.\nThanks,\nDaniel Brandt")
+    assert signed.text.endswith("[NAME_1]")
+
+
+def test_signature_line_without_sign_off():
+    result = redact("Search is broken.\nHannah Haddad\nhannah@x.io")
+    assert "[NAME_1]" in result.text and "[EMAIL_1]" in result.text
+
+
+def test_known_names_are_removed_everywhere():
+    result = redact("daniel brandt wrote in, Daniel Brandt again", known_names=["Daniel Brandt"])
+    assert result.text.count("[NAME_") == 2
+
+
+def test_street_address():
+    assert redact("ship to 221 Baker Street please").labels == {"ADDRESS"}
+
+
+def test_plain_sentences_are_untouched():
+    text = "The board view crashes when I drag a card."
+    assert redact(text).text == text
