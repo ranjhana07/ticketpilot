@@ -5,7 +5,12 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
-PHONE = re.compile(r"(?<![\w-])(?:\+\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)|\d{2,4})[\s.-]?\d{3,4}[\s.-]?\d{3,4}(?![\w-])")
+CARD = re.compile(r"(?<![\w-])(?:\d[ -]?){12,18}\d(?![\w-])")
+SSN = re.compile(r"(?<!\d)\d{3}-\d{2}-\d{4}(?!\d)")
+IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,3})?\b")
+IPV4 = re.compile(r"(?<![\d.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\d.])")
+SECRET = re.compile(r"\b(?:sk_(?:live|test)_[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}|xox[bp]-[A-Za-z0-9-]{20,})\b")
+PHONE = re.compile(r"(?<![\w-])(?<!\d[\s.-])(?:\+\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)|\d{2,4})[\s.-]?\d{3,4}[\s.-]?\d{3,4}(?![\w-]|[\s.-]\d)")
 
 
 @dataclass(frozen=True)
@@ -38,12 +43,40 @@ def _digits(value: str) -> str:
     return re.sub(r"\D", "", value)
 
 
+def luhn_valid(value: str) -> bool:
+    digits = [int(char) for char in _digits(value)]
+    if not 13 <= len(digits) <= 19:
+        return False
+    total = 0
+    for position, digit in enumerate(reversed(digits)):
+        if position % 2 == 1:
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        total += digit
+    return total % 10 == 0
+
+
+def iban_valid(value: str) -> bool:
+    compact = re.sub(r"\s", "", value).upper()
+    if not 15 <= len(compact) <= 34:
+        return False
+    rearranged = compact[4:] + compact[:4]
+    numeric = "".join(str(int(char, 36)) for char in rearranged)
+    return int(numeric) % 97 == 1
+
+
 def _plausible_phone(value: str) -> bool:
     return 9 <= len(_digits(value)) <= 15
 
 
 RULES: list[Rule] = [
     Rule("EMAIL", EMAIL),
+    Rule("SECRET", SECRET),
+    Rule("IBAN", IBAN, iban_valid),
+    Rule("CARD", CARD, luhn_valid),
+    Rule("SSN", SSN),
+    Rule("IP", IPV4),
     Rule("PHONE", PHONE, _plausible_phone),
 ]
 
