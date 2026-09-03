@@ -70,7 +70,7 @@ class TransformerClassifier:
                 optimizer.step()
                 scheduler.step()
                 optimizer.zero_grad()
-                running += float(output.loss) * len(batch)
+                running += output.loss.item() * len(batch)
             if on_epoch:
                 on_epoch(epoch + 1, running / len(texts), time.time() - started)
         self.model.eval()
