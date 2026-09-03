@@ -64,3 +64,16 @@ def test_subsample_per_class_caps_counts():
     tickets = generate_tickets(500, seed=7)
     sample = subsample_per_class(tickets, key=lambda t: t.intent, per_class=10)
     assert max(Counter(t.intent for t in sample).values()) == 10
+
+
+def test_duplicate_pairs_have_expected_structure():
+    from ticketpilot.data.synthetic import make_duplicate_pairs
+
+    pairs = make_duplicate_pairs(90, seed=8)
+    positives = [(a, b) for a, b, label in pairs if label]
+    assert len(positives) == 30
+    for a, b in positives:
+        assert a.intent == b.intent and a.entity == b.entity and a.from_email == b.from_email
+    for a, b, label in pairs:
+        if not label:
+            assert a.entity != b.entity

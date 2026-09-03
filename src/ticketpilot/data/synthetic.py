@@ -161,12 +161,17 @@ def make_ticket(
     index: int,
     intent: str | None = None,
     language: str = "en",
+    sender: tuple[str, str, str] | None = None,
+    order_id: str | None = None,
 ) -> Ticket:
     intent = intent or rng.choice(INTENTS)
     cue_priority = sample_priority(rng, intent)
-    first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
-    email = make_email(rng, first, last)
-    order_id = make_order_id(rng)
+    if sender:
+        first, last, email = sender
+    else:
+        first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
+        email = make_email(rng, first, last)
+    order_id = order_id or make_order_id(rng)
     subject = rng.choice(SUBJECTS[intent]).format(order=order_id)
     body = render_core(rng, intent, order_id, language)
     cue = rng.choice(PRIORITY_CUES[cue_priority]) if language == "en" else ""
@@ -203,3 +208,28 @@ def generate_tickets(count: int, seed: int = 13, foreign_share: float = 0.0) -> 
         language = rng.choice(list(CORES_FOREIGN)) if rng.random() < foreign_share else "en"
         tickets.append(make_ticket(rng, index, language=language))
     return tickets
+
+
+def make_duplicate_pairs(count: int, seed: int = 31) -> list[tuple[Ticket, Ticket, bool]]:
+    rng = random.Random(seed)
+    pairs: list[tuple[Ticket, Ticket, bool]] = []
+    for index in range(count):
+        intent = rng.choice(INTENTS)
+        first, last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
+        sender = (first, last, make_email(rng, first, last))
+        order_id = make_order_id(rng)
+        left = make_ticket(rng, index * 2, intent, sender=sender, order_id=order_id)
+        kind = index % 3
+        if kind == 0:
+            right = make_ticket(rng, index * 2 + 1, intent, sender=sender, order_id=order_id)
+            pairs.append((left, right, True))
+        elif kind == 1:
+            other_first, other_last = rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
+            other = (other_first, other_last, make_email(rng, other_first, other_last))
+            right = make_ticket(rng, index * 2 + 1, intent, sender=other, order_id=make_order_id(rng))
+            pairs.append((left, right, False))
+        else:
+            other_intent = rng.choice([name for name in INTENTS if name != intent])
+            right = make_ticket(rng, index * 2 + 1, other_intent)
+            pairs.append((left, right, False))
+    return pairs
