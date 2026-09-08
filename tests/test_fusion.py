@@ -7,7 +7,7 @@ from ticketpilot.kb.fusion import reciprocal_rank_fusion
 
 def test_items_ranked_high_in_both_lists_win():
     fused = reciprocal_rank_fusion([[1, 2, 3], [3, 2, 9]])
-    assert [item for item, _ in fused][:2] == [2, 3]
+    assert [item for item, _ in fused][:2] == [3, 2]
 
 
 def test_weights_shift_the_outcome():
