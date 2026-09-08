@@ -30,3 +30,8 @@ def test_query_without_known_terms_returns_nothing():
 def test_rarer_terms_weigh_more():
     index = BM25Index(["billing page page page", "billing refund"])
     assert index.search("refund")[0][0] == 1
+
+
+def test_doubled_consonants_are_collapsed():
+    assert stem("dragging") == stem("drag")
+    assert stem("stopped") == stem("stop")

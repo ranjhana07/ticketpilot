@@ -16,7 +16,10 @@ TOKEN = re.compile(r"[a-z0-9]+")
 def stem(word: str) -> str:
     for suffix in ("ing", "ed", "es", "s", "ly"):
         if word.endswith(suffix) and len(word) - len(suffix) >= 4:
-            return word[: -len(suffix)]
+            root = word[: -len(suffix)]
+            if root[-1] == root[-2] and root[-1] not in "aeiouls":
+                root = root[:-1]
+            return root
     return word
 
 
