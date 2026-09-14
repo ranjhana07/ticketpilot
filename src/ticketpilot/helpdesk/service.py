@@ -6,9 +6,11 @@ from datetime import datetime, timezone
 from typing import Callable
 
 from ticketpilot.helpdesk.db import Database
-from ticketpilot.helpdesk.schemas import Customer, Order, Subscription, VerifyResponse
+from ticketpilot.helpdesk.schemas import Customer, Order, RefundResponse, Subscription, VerifyResponse
 
 Clock = Callable[[], datetime]
+
+REFUNDABLE_STATUSES = ("paid", "provisioned")
 
 
 class NotFound(Exception):
@@ -119,3 +121,34 @@ class HelpdeskService:
                 "SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC", (customer_id,)
             ).fetchall()
             return [self._order_from_row(row) for row in rows]
+
+    def refund_order(self, order_id: str, amount: float, reason: str, issued_by: str) -> RefundResponse:
+        requested = cents(amount)
+        with self.db.transaction() as connection:
+            row = connection.execute("SELECT * FROM orders WHERE id = ?", (order_id.upper(),)).fetchone()
+            if row is None:
+                raise NotFound(f"order {order_id} not found")
+            if row["status"] not in REFUNDABLE_STATUSES:
+                raise Conflict(f"order {row['id']} is {row['status']} and cannot be refunded")
+            remaining = row["amount_cents"] - row["refunded_cents"]
+            if requested > remaining:
+                raise Conflict(f"refund of {amount:.2f} exceeds the refundable balance of {remaining / 100:.2f}")
+            cursor = connection.execute(
+                "INSERT INTO refunds (order_id, amount_cents, reason, issued_by, created_at) VALUES (?, ?, ?, ?, ?)",
+                (row["id"], requested, reason, issued_by, self._stamp()),
+            )
+            refunded_total = row["refunded_cents"] + requested
+            status = "refunded" if refunded_total == row["amount_cents"] else row["status"]
+            connection.execute(
+                "UPDATE orders SET refunded_cents = ?, status = ? WHERE id = ?", (refunded_total, status, row["id"])
+            )
+            self._audit(
+                connection, issued_by, "refund_order", row["id"], {"amount": requested / 100, "reason": reason}
+            )
+            return RefundResponse(
+                refund_id=cursor.lastrowid,
+                order_id=row["id"],
+                amount=requested / 100,
+                order_refunded_total=refunded_total / 100,
+                status=status,
+            )
