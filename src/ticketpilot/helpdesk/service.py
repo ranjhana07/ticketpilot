@@ -6,7 +6,15 @@ from datetime import datetime, timezone
 from typing import Callable
 
 from ticketpilot.helpdesk.db import Database
-from ticketpilot.helpdesk.schemas import Customer, Order, RefundResponse, Subscription, VerifyResponse
+from ticketpilot.helpdesk.schemas import (
+    Customer,
+    Order,
+    PasswordResetResponse,
+    RefundResponse,
+    Subscription,
+    SubscriptionChange,
+    VerifyResponse,
+)
 
 Clock = Callable[[], datetime]
 
@@ -152,3 +160,47 @@ class HelpdeskService:
                 order_refunded_total=refunded_total / 100,
                 status=status,
             )
+
+    def reset_password(self, customer_id: str, actor: str = "agent") -> PasswordResetResponse:
+        customer = self.get_customer(customer_id)
+        if customer.fraud_flag:
+            raise Forbidden("account is flagged for review and cannot be reset through support")
+        with self.db.transaction() as connection:
+            connection.execute(
+                "INSERT INTO password_resets (customer_id, sent_to, created_at) VALUES (?, ?, ?)",
+                (customer.id, customer.email, self._stamp()),
+            )
+            if customer.status == "locked":
+                connection.execute("UPDATE customers SET status = 'active' WHERE id = ?", (customer.id,))
+            self._audit(connection, actor, "reset_password", customer.id, {"sent_to": customer.email})
+        return PasswordResetResponse(status="sent", sent_to=customer.email)
+
+    def update_subscription(self, customer_id: str, change: SubscriptionChange, actor: str = "agent") -> Subscription:
+        customer = self.get_customer(customer_id)
+        if change.plan == "enterprise":
+            raise Forbidden("enterprise plans are arranged by the sales team")
+        if customer.subscription is None:
+            raise NotFound("customer has no subscription")
+        if customer.subscription.status != "active":
+            raise Conflict("subscription is not active")
+        with self.db.transaction() as connection:
+            connection.execute(
+                "UPDATE subscriptions SET plan = ?, billing_cycle = COALESCE(?, billing_cycle), seats = COALESCE(?, seats) "
+                "WHERE customer_id = ?",
+                (change.plan, change.billing_cycle, change.seats, customer_id),
+            )
+            self._audit(connection, actor, "update_subscription", customer_id, change.model_dump(exclude_none=True))
+            subscription = self._subscription(connection, customer_id)
+        return subscription
+
+    def cancel_subscription(self, customer_id: str, reason: str, actor: str = "agent") -> Subscription:
+        customer = self.get_customer(customer_id)
+        if customer.subscription is None or customer.subscription.status != "active":
+            raise Conflict("no active subscription to cancel")
+        with self.db.transaction() as connection:
+            connection.execute(
+                "UPDATE subscriptions SET cancel_at_period_end = 1 WHERE customer_id = ?", (customer_id,)
+            )
+            self._audit(connection, actor, "cancel_subscription", customer_id, {"reason": reason})
+            subscription = self._subscription(connection, customer_id)
+        return subscription
