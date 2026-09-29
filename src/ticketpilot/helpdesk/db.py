@@ -6,97 +6,107 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS customers (
-    id TEXT PRIMARY KEY,
-    email TEXT NOT NULL UNIQUE,
-    name TEXT NOT NULL,
-    company TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'active',
-    fraud_flag INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS subscriptions (
-    customer_id TEXT PRIMARY KEY REFERENCES customers(id),
-    plan TEXT NOT NULL,
-    seats INTEGER NOT NULL DEFAULT 1,
-    billing_cycle TEXT NOT NULL DEFAULT 'monthly',
-    status TEXT NOT NULL DEFAULT 'active',
-    renews_on TEXT,
-    cancel_at_period_end INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS orders (
-    id TEXT PRIMARY KEY,
-    customer_id TEXT NOT NULL REFERENCES customers(id),
-    kind TEXT NOT NULL,
-    description TEXT NOT NULL,
-    amount_cents INTEGER NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'USD',
-    status TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    refunded_cents INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS refunds (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id TEXT NOT NULL REFERENCES orders(id),
-    amount_cents INTEGER NOT NULL,
-    reason TEXT NOT NULL,
-    issued_by TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS tickets (
-    id TEXT PRIMARY KEY,
-    customer_email TEXT NOT NULL,
-    customer_name TEXT NOT NULL DEFAULT '',
-    subject TEXT NOT NULL,
-    body TEXT NOT NULL,
-    channel TEXT NOT NULL DEFAULT 'email',
-    status TEXT NOT NULL DEFAULT 'new',
-    assignee TEXT,
-    created_at TEXT NOT NULL,
-    triage_json TEXT,
-    proposal_json TEXT,
-    draft_json TEXT,
-    thread_id TEXT
-);
-
-CREATE TABLE IF NOT EXISTS notes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ticket_id TEXT NOT NULL REFERENCES tickets(id),
-    author TEXT NOT NULL,
-    body TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS escalations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ticket_id TEXT NOT NULL REFERENCES tickets(id),
-    team TEXT NOT NULL,
-    reason TEXT NOT NULL,
-    escalated_by TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS password_resets (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    customer_id TEXT NOT NULL REFERENCES customers(id),
-    sent_to TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS audit_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ts TEXT NOT NULL,
-    actor TEXT NOT NULL,
-    action TEXT NOT NULL,
-    target TEXT NOT NULL,
-    detail TEXT NOT NULL DEFAULT '{}'
-);
-"""
+SCHEMA = (
+    (
+        "CREATE TABLE IF NOT EXISTS customers (\n"
+        "    id TEXT PRIMARY KEY,\n"
+        "    email TEXT NOT NULL UNIQUE,\n"
+        "    name TEXT NOT NULL,\n"
+        "    company TEXT NOT NULL DEFAULT '',\n"
+        "    status TEXT NOT NULL DEFAULT 'active',\n"
+        "    fraud_flag INTEGER NOT NULL DEFAULT 0,\n"
+        "    created_at TEXT NOT NULL\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS subscriptions (\n"
+        "    customer_id TEXT PRIMARY KEY REFERENCES customers(id),\n"
+        "    plan TEXT NOT NULL,\n"
+        "    seats INTEGER NOT NULL DEFAULT 1,\n"
+        "    billing_cycle TEXT NOT NULL DEFAULT 'monthly',\n"
+        "    status TEXT NOT NULL DEFAULT 'active',\n"
+        "    renews_on TEXT,\n"
+        "    cancel_at_period_end INTEGER NOT NULL DEFAULT 0\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS orders (\n"
+        "    id TEXT PRIMARY KEY,\n"
+        "    customer_id TEXT NOT NULL REFERENCES customers(id),\n"
+        "    kind TEXT NOT NULL,\n"
+        "    description TEXT NOT NULL,\n"
+        "    amount_cents INTEGER NOT NULL,\n"
+        "    currency TEXT NOT NULL DEFAULT 'USD',\n"
+        "    status TEXT NOT NULL,\n"
+        "    created_at TEXT NOT NULL,\n"
+        "    refunded_cents INTEGER NOT NULL DEFAULT 0\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS refunds (\n"
+        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+        "    order_id TEXT NOT NULL REFERENCES orders(id),\n"
+        "    amount_cents INTEGER NOT NULL,\n"
+        "    reason TEXT NOT NULL,\n"
+        "    issued_by TEXT NOT NULL,\n"
+        "    created_at TEXT NOT NULL\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS tickets (\n"
+        "    id TEXT PRIMARY KEY,\n"
+        "    customer_email TEXT NOT NULL,\n"
+        "    customer_name TEXT NOT NULL DEFAULT '',\n"
+        "    subject TEXT NOT NULL,\n"
+        "    body TEXT NOT NULL,\n"
+        "    channel TEXT NOT NULL DEFAULT 'email',\n"
+        "    status TEXT NOT NULL DEFAULT 'new',\n"
+        "    assignee TEXT,\n"
+        "    created_at TEXT NOT NULL,\n"
+        "    triage_json TEXT,\n"
+        "    proposal_json TEXT,\n"
+        "    draft_json TEXT,\n"
+        "    thread_id TEXT\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS notes (\n"
+        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+        "    ticket_id TEXT NOT NULL REFERENCES tickets(id),\n"
+        "    author TEXT NOT NULL,\n"
+        "    body TEXT NOT NULL,\n"
+        "    created_at TEXT NOT NULL\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS escalations (\n"
+        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+        "    ticket_id TEXT NOT NULL REFERENCES tickets(id),\n"
+        "    team TEXT NOT NULL,\n"
+        "    reason TEXT NOT NULL,\n"
+        "    escalated_by TEXT NOT NULL,\n"
+        "    created_at TEXT NOT NULL\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS password_resets (\n"
+        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+        "    customer_id TEXT NOT NULL REFERENCES customers(id),\n"
+        "    sent_to TEXT NOT NULL,\n"
+        "    created_at TEXT NOT NULL\n"
+        ");"
+    ),
+    (
+        "CREATE TABLE IF NOT EXISTS audit_log (\n"
+        "    id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+        "    ts TEXT NOT NULL,\n"
+        "    actor TEXT NOT NULL,\n"
+        "    action TEXT NOT NULL,\n"
+        "    target TEXT NOT NULL,\n"
+        "    detail TEXT NOT NULL DEFAULT '{}'\n"
+        ");"
+    ),
+)
 
 
 class Database:
@@ -107,7 +117,8 @@ class Database:
         self._connection.execute("PRAGMA foreign_keys = ON")
         self._lock = threading.RLock()
         with self.transaction() as connection:
-            connection.executescript(SCHEMA)
+            for statement in SCHEMA:
+                connection.execute(statement)
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
