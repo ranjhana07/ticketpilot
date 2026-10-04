@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -19,6 +20,9 @@ from ticketpilot.data.schemas import Ticket
 from ticketpilot.kb.retriever import HybridRetriever
 from ticketpilot.triage.pii import redact
 from ticketpilot.triage.pipeline import TriagePipeline
+
+
+SENDER_TOKEN = "[SENDER_EMAIL]"
 
 
 @dataclass
@@ -47,11 +51,15 @@ def build_graph(deps: AgentDeps, checkpointer: BaseCheckpointSaver | None = None
     def triage_node(state: AgentState) -> dict[str, Any]:
         ticket = _ticket(state)
         names = [ticket.from_name] if ticket.from_name else []
-        redaction = redact(ticket.text, known_names=names)
+        text = ticket.text
+        if ticket.from_email:
+            text = re.sub(re.escape(ticket.from_email), SENDER_TOKEN, text, flags=re.IGNORECASE)
+        redaction = redact(text, known_names=names)
         if deps.triage is not None:
             triage = deps.triage.analyze(ticket).to_dict()
         else:
-            triage = {"intent": None, "priority": None, "language": "en", "redacted_text": redaction.text}
+            triage = {"intent": None, "priority": None, "language": "en"}
+        triage["redacted_text"] = redaction.text
         return {
             "triage": triage,
             "pii_mapping": redaction.mapping,

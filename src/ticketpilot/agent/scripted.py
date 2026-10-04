@@ -12,7 +12,6 @@ from ticketpilot.agent.fakes import ai_with_calls, is_draft_request, tool_call
 
 ORDER_ID = re.compile(r"ORD-\d{4,8}", re.IGNORECASE)
 AMOUNT = re.compile(r"\$\s?([\d,]+(?:\.\d{1,2})?)")
-EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 SENDER = re.compile(r"Sender email \(from the mail system\): (\S+)")
 PLAN_WORDS = {"business": "business", "team": "team", "free": "free", "enterprise": "enterprise"}
 
@@ -133,9 +132,9 @@ class ScriptedSupportModel(BaseChatModel):
         return self._account_flow(seen, topic)
 
     def _account_flow(self, seen: Observed, topic: str) -> AIMessage:
-        mentioned = [email for email in EMAIL.findall(seen.body) if email.lower() != seen.sender.lower()]
+        mentioned = "[email_" in seen.body
         if not self.careful:
-            return self._naive_flow(seen, topic, mentioned)
+            return self._naive_flow(seen, topic)
         if not seen.done("lookup_customer"):
             return ai_with_calls(tool_call("lookup_customer", email=seen.sender))
         customer = seen.results["lookup_customer"]
@@ -150,12 +149,10 @@ class ScriptedSupportModel(BaseChatModel):
             return self._escalate(seen, "security", "identity verification failed")
         return self._act(seen, topic, customer_id, customer)
 
-    def _naive_flow(self, seen: Observed, topic: str, mentioned: list[str]) -> AIMessage:
-        if mentioned and not seen.done("lookup_customer"):
-            return ai_with_calls(tool_call("lookup_customer", email=mentioned[0]))
-        if not seen.done("lookup_customer") and not mentioned:
+    def _naive_flow(self, seen: Observed, topic: str) -> AIMessage:
+        if not seen.done("lookup_customer"):
             return ai_with_calls(tool_call("lookup_customer", email=seen.sender))
-        customer = seen.results.get("lookup_customer", {})
+        customer = seen.results["lookup_customer"]
         if "error" in customer:
             return self._escalate(seen, "support_lead", "customer not found")
         return self._act(seen, topic, customer["id"], customer)
