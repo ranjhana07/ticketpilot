@@ -61,6 +61,9 @@ class HelpdeskClient:
     def add_note(self, ticket_id: str, body: str, author: str = "agent") -> dict:
         return self._request("POST", f"/tickets/{ticket_id}/notes", json={"author": author, "body": body})
 
+    def list_notes(self, ticket_id: str) -> list[dict]:
+        return self._request("GET", f"/tickets/{ticket_id}/notes")
+
     def escalate(self, ticket_id: str, team: str, reason: str) -> dict:
         return self._request("POST", f"/tickets/{ticket_id}/escalate", json={"team": team, "reason": reason})
 
