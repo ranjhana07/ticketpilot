@@ -51,6 +51,7 @@ def inbox(helpdesk, triage_pipeline):
         embedder=HashingEmbedder(),
         reranker=OverlapReranker(),
         triage=triage_pipeline,
+        clock=lambda: FIXED_NOW,
     )
     with TestClient(create_api(container)) as client:
         yield client

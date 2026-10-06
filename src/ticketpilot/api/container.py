@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import threading
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Callable
 
 import httpx
 from langchain_core.language_models import BaseChatModel
@@ -10,7 +12,7 @@ from langchain_core.language_models import BaseChatModel
 from ticketpilot.agent.client import HelpdeskClient
 from ticketpilot.agent.graph import AgentDeps
 from ticketpilot.agent.llm import build_llm
-from ticketpilot.agent.policy import PolicyConfig, PolicyEngine
+from ticketpilot.agent.policy import PolicyConfig, PolicyEngine, utc_now
 from ticketpilot.agent.runner import SupportAgent
 from ticketpilot.agent.tools import ToolBox
 from ticketpilot.config import Settings
@@ -39,6 +41,7 @@ def build_container(
     embedder: Embedder | None = None,
     reranker: Reranker | None = None,
     triage: TriagePipeline | None = None,
+    clock: Callable[[], datetime] | None = None,
 ) -> Container:
     helpdesk = HelpdeskClient(settings.helpdesk_url, http=http)
     embedder = embedder or get_embedder(settings.embedder)
@@ -50,10 +53,11 @@ def build_container(
             triage = load_pipeline(settings.models_dir)
         except FileNotFoundError:
             log.warning("no trained triage models in %s, running without intent and priority predictions", settings.models_dir)
+    policy = PolicyEngine(helpdesk, PolicyConfig.from_settings(settings), clock or utc_now)
     deps = AgentDeps(
         llm=llm or build_llm(settings),
         toolbox=ToolBox(helpdesk, retriever),
-        policy=PolicyEngine(helpdesk, PolicyConfig.from_settings(settings)),
+        policy=policy,
         triage=triage,
         retriever=retriever,
         max_steps=settings.agent_max_steps,

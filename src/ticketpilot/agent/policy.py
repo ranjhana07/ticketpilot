@@ -51,7 +51,7 @@ def _parse_time(value: str) -> datetime:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
-def _utc_now() -> datetime:
+def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
@@ -60,7 +60,7 @@ class PolicyEngine:
         self,
         client: HelpdeskClient,
         config: PolicyConfig | None = None,
-        clock: Callable[[], datetime] = _utc_now,
+        clock: Callable[[], datetime] = utc_now,
     ) -> None:
         self.client = client
         self.config = config or PolicyConfig()
