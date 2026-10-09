@@ -435,3 +435,106 @@ p {
   height: 100%;
   background: var(--accent);
 }
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 14px;
+  border-left: 2px solid var(--border);
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-item {
+  position: relative;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  border: 2px solid var(--surface);
+}
+
+.timeline-item.is-executed::before {
+  background: var(--good);
+}
+
+.timeline-item.is-blocked::before {
+  background: var(--bad);
+}
+
+.timeline-item.is-failed::before {
+  background: var(--warn);
+}
+
+.timeline-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.timeline-item p {
+  margin-top: 4px;
+}
+
+.approvals {
+  border: 1px solid var(--warn);
+  background: var(--warn-soft);
+  border-radius: var(--radius);
+  padding: 4px 14px 14px;
+}
+
+.approvals .section-title {
+  color: var(--warn);
+  margin-top: 12px;
+}
+
+.approval-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.approval-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.segmented .chip.is-active[data-value="reject"] {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+.segmented .chip.is-active[data-value="approve"] {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.approval-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.approval-actions .input {
+  max-width: 150px;
+}
