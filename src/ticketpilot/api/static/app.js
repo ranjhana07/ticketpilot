@@ -141,9 +141,78 @@ async function loadTickets() {
   renderQueue();
 }
 
+function triageCell(label, value, meter) {
+  return el(
+    "div",
+    { class: "triage-cell" },
+    el("div", { class: "label", text: label }),
+    el("div", { class: "value", text: value }),
+    meter === undefined ? null : el("div", { class: "meter" }, el("span", { style: `width:${Math.round(meter * 100)}%` })),
+  );
+}
+
+function renderTriage(triage) {
+  const container = $("#triage");
+  container.replaceChildren();
+  if (!triage || !triage.intent) {
+    container.append(el("p", { class: "muted small", text: "No triage result yet." }));
+    return;
+  }
+  const alternatives = (triage.top_intents || []).slice(1, 3).map(([name, score]) => `${formatIntent(name)} ${Math.round(score * 100)}%`);
+  container.append(
+    triageCell("Intent", formatIntent(triage.intent), triage.intent_confidence),
+    triageCell("Priority", triage.priority_bumped ? `${triage.priority} (raised)` : triage.priority, triage.priority_confidence),
+    triageCell("Sentiment", `${triage.sentiment_label} (${triage.sentiment})`),
+    triageCell("Urgency", `${Math.round(triage.urgency * 100)}%`, triage.urgency),
+    triageCell("Language", triage.language),
+    triageCell("PII found", triage.pii_labels.length ? triage.pii_labels.join(", ") : "none"),
+  );
+  if (alternatives.length) {
+    container.append(triageCell("Also possible", alternatives.join(", ")));
+  }
+}
+
+function renderDuplicates(triage) {
+  const box = $("#duplicates");
+  const matches = (triage && triage.duplicates) || [];
+  box.hidden = matches.length === 0;
+  box.textContent = matches.length
+    ? `Possible duplicate of ${matches.map((match) => `${match.ticket_id} (${Math.round(match.score * 100)}%)`).join(", ")}`
+    : "";
+}
+
+function renderNotes(notes) {
+  const list = $("#notes");
+  list.replaceChildren(...notes.map((note) => el("li", {}, el("strong", { text: `${note.author}: ` }), note.body)));
+  $("#notes-block").hidden = notes.length === 0;
+}
+
+function renderDetail() {
+  const ticket = state.detail;
+  $("#detail-empty").hidden = Boolean(ticket);
+  $("#detail").hidden = !ticket;
+  if (!ticket) return;
+  $("#detail-id").textContent = `${ticket.id} / ${ticket.channel}`;
+  $("#detail-subject").textContent = ticket.subject;
+  $("#detail-from").textContent = `${ticket.customer_name || "Unknown sender"} <${ticket.customer_email}> / ${relativeTime(ticket.created_at)}`;
+  $("#detail-body").textContent = ticket.body;
+  renderTriage(ticket.triage);
+  renderDuplicates(ticket.triage);
+  renderNotes(ticket.notes || []);
+  const locked = ["replied", "awaiting_approval"].includes(ticket.status);
+  $("#run-agent").disabled = locked;
+  $("#run-agent").textContent = ticket.proposal ? "Run agent again" : "Run agent";
+}
+
 async function selectTicket(id) {
   state.selectedId = id;
   renderQueue();
+  try {
+    state.detail = await api(`/api/tickets/${id}`);
+    renderDetail();
+  } catch (error) {
+    toast(error.message, "error");
+  }
 }
 
 async function init() {
