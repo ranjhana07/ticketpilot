@@ -210,7 +210,148 @@ async function selectTicket(id) {
   try {
     state.detail = await api(`/api/tickets/${id}`);
     renderDetail();
+    renderProposal();
   } catch (error) {
+    toast(error.message, "error");
+  }
+}
+
+const money = (value) => `$${Number(value).toFixed(2)}`;
+
+function describeAction(action) {
+  const args = action.args || {};
+  switch (action.tool) {
+    case "lookup_customer":
+      return `Look up customer ${args.email}`;
+    case "verify_identity":
+      return `Verify sender owns ${args.customer_id}`;
+    case "get_order":
+      return `Read order ${args.order_id}`;
+    case "list_customer_orders":
+      return `List orders for ${args.customer_id}`;
+    case "refund_order":
+      return `Refund ${money(args.amount)} on ${args.order_id}`;
+    case "reset_password":
+      return `Send password reset link for ${args.customer_id}`;
+    case "update_subscription":
+      return `Move ${args.customer_id} to the ${args.plan} plan`;
+    case "cancel_subscription":
+      return `Cancel subscription for ${args.customer_id}`;
+    case "escalate_to_human":
+      return `Escalate to ${args.team}`;
+    case "add_internal_note":
+      return "Add internal note";
+    case "search_knowledge_base":
+      return "Search the help center";
+    default:
+      return action.tool;
+  }
+}
+
+function actionDetail(action) {
+  if (action.status === "blocked") return action.reason || action.rule;
+  if (action.status === "failed") return action.result && action.result.error;
+  if (action.tool === "escalate_to_human") return action.args.reason;
+  if (action.tool === "add_internal_note") return action.args.note;
+  if (action.tool === "verify_identity") {
+    return action.result && action.result.verified ? "Sender matches the account email" : "Sender does not match the account";
+  }
+  if (action.approved_by) return `Approved by ${action.approved_by}`;
+  return "";
+}
+
+const ACTION_STATUS_CLASS = { executed: "badge-good", blocked: "badge-bad", failed: "badge-warn" };
+
+function renderActions(actions) {
+  const list = $("#actions");
+  list.replaceChildren();
+  if (!actions.length) {
+    list.append(el("li", { class: "muted small", text: "The agent did not take any action." }));
+    return;
+  }
+  for (const action of actions) {
+    const detail = actionDetail(action);
+    list.append(
+      el(
+        "li",
+        { class: `timeline-item is-${action.status}` },
+        el(
+          "div",
+          { class: "queue-row" },
+          el("span", { class: "timeline-title", text: describeAction(action) }),
+          badge(action.status, ACTION_STATUS_CLASS[action.status] || "badge-muted"),
+        ),
+        detail ? el("p", { class: "muted small", text: detail }) : null,
+      ),
+    );
+  }
+}
+
+function renderApprovals(pending) {
+  $("#approvals").hidden = pending.length === 0;
+  const list = $("#approval-list");
+  list.replaceChildren();
+  state.choices = {};
+  for (const item of pending) {
+    const row = el("li", { class: "approval-item" });
+    const choose = (value) => () => {
+      state.choices[item.call_id] = value;
+      row.querySelectorAll("button").forEach((button) => button.classList.toggle("is-active", button.dataset.value === value));
+      $("#submit-approvals").disabled = pending.some((entry) => !state.choices[entry.call_id]);
+    };
+    row.append(
+      el("strong", { text: describeAction(item) }),
+      el("p", { class: "muted small", text: item.reason }),
+      el(
+        "div",
+        { class: "segmented" },
+        el("button", { type: "button", class: "chip", "data-value": "approve", text: "Approve", onclick: choose("approve") }),
+        el("button", { type: "button", class: "chip", "data-value": "reject", text: "Reject", onclick: choose("reject") }),
+      ),
+    );
+    list.append(row);
+  }
+  $("#submit-approvals").disabled = pending.length > 0;
+}
+
+function renderProposal() {
+  const ticket = state.detail;
+  const proposal = ticket && ticket.proposal;
+  $("#proposal-empty").hidden = Boolean(proposal);
+  $("#proposal").hidden = !proposal;
+  if (!proposal) return;
+  renderApprovals(proposal.pending_approvals || []);
+  renderActions(proposal.actions || []);
+}
+
+async function runAgent() {
+  const button = $("#run-agent");
+  button.disabled = true;
+  button.textContent = "Running";
+  try {
+    await api(`/api/tickets/${state.selectedId}/run`, { method: "POST" });
+    await selectTicket(state.selectedId);
+    await loadTickets();
+    toast(state.detail.status === "awaiting_approval" ? "Agent paused, approval needed" : "Agent finished");
+  } catch (error) {
+    toast(error.message, "error");
+    renderDetail();
+  }
+}
+
+async function submitApprovals() {
+  const button = $("#submit-approvals");
+  button.disabled = true;
+  try {
+    await api(`/api/tickets/${state.selectedId}/approve`, {
+      method: "POST",
+      body: { decisions: state.choices, reviewer: $("#reviewer").value.trim() || "reviewer" },
+    });
+    await selectTicket(state.selectedId);
+    await loadTickets();
+    toast("Decisions submitted");
+  } catch (error) {
+    button.disabled = false;
     toast(error.message, "error");
   }
 }
@@ -226,6 +367,8 @@ async function init() {
   }
 }
 
+$("#run-agent").addEventListener("click", runAgent);
+$("#submit-approvals").addEventListener("click", submitApprovals);
 $("#refresh").addEventListener("click", () => loadTickets().catch((error) => toast(error.message, "error")));
 $("#search").addEventListener("input", (event) => {
   state.query = event.target.value.trim();
