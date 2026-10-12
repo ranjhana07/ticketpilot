@@ -211,6 +211,7 @@ async function selectTicket(id) {
     state.detail = await api(`/api/tickets/${id}`);
     renderDetail();
     renderProposal();
+    renderDraft();
   } catch (error) {
     toast(error.message, "error");
   }
@@ -356,6 +357,68 @@ async function submitApprovals() {
   }
 }
 
+function renderDraft() {
+  const ticket = state.detail;
+  const draft = ticket && ticket.draft;
+  const sent = Boolean(draft && draft.sent_at);
+  const waiting = ticket && ticket.status === "awaiting_approval";
+  const textarea = $("#draft-text");
+  textarea.value = draft ? draft.reply : "";
+  textarea.disabled = !draft || sent;
+  $("#save-draft").disabled = !draft || sent;
+  $("#send-reply").disabled = !draft || sent || waiting;
+  const flag = $("#draft-flag");
+  flag.hidden = !draft;
+  if (draft) {
+    flag.textContent = sent ? "sent" : draft.edited ? "edited" : draft.needs_human_attention ? "needs attention" : "ready";
+    flag.className = `badge ${sent ? "badge-muted" : draft.needs_human_attention ? "badge-warn" : "badge-good"}`;
+  }
+  const citations = $("#citations");
+  citations.replaceChildren();
+  const known = new Map(((ticket && ticket.proposal && ticket.proposal.kb_hits) || []).map((hit) => [hit.article_id, hit]));
+  for (const id of (draft && draft.citations) || []) {
+    const hit = known.get(id);
+    citations.append(badge(hit ? `${hit.title}` : id, "badge-muted"));
+  }
+  let status = "";
+  if (sent) status = `Sent by ${draft.sent_by} at ${new Date(draft.sent_at).toLocaleString()}`;
+  else if (waiting) status = "Resolve the pending approvals before sending.";
+  else if (draft && draft.citations.length === 0) status = "This draft cites no help center article.";
+  $("#draft-status").textContent = status;
+}
+
+async function saveDraft() {
+  const reply = $("#draft-text").value.trim();
+  if (!reply) {
+    toast("The reply cannot be empty", "error");
+    return false;
+  }
+  try {
+    state.detail = { ...state.detail, ...(await api(`/api/tickets/${state.selectedId}/draft`, { method: "PUT", body: { reply } })) };
+    renderDraft();
+    toast("Draft saved");
+    return true;
+  } catch (error) {
+    toast(error.message, "error");
+    return false;
+  }
+}
+
+async function sendReply() {
+  const current = state.detail.draft ? state.detail.draft.reply : "";
+  if ($("#draft-text").value.trim() !== current && !(await saveDraft())) return;
+  try {
+    const reviewer = $("#reviewer").value.trim() || "reviewer";
+    state.detail = { ...state.detail, ...(await api(`/api/tickets/${state.selectedId}/send`, { method: "POST", body: { reviewer } })) };
+    renderDetail();
+    renderDraft();
+    await loadTickets();
+    toast("Reply sent");
+  } catch (error) {
+    toast(error.message, "error");
+  }
+}
+
 async function init() {
   try {
     state.config = await api("/api/config");
@@ -368,6 +431,8 @@ async function init() {
 }
 
 $("#run-agent").addEventListener("click", runAgent);
+$("#save-draft").addEventListener("click", saveDraft);
+$("#send-reply").addEventListener("click", sendReply);
 $("#submit-approvals").addEventListener("click", submitApprovals);
 $("#refresh").addEventListener("click", () => loadTickets().catch((error) => toast(error.message, "error")));
 $("#search").addEventListener("input", (event) => {
