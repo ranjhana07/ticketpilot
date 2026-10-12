@@ -447,4 +447,22 @@ $("#filters").addEventListener("click", (event) => {
   renderQueue();
 });
 
+function visibleIds() {
+  return state.tickets.filter(matchesFilter).map((ticket) => ticket.id);
+}
+
+document.addEventListener("keydown", (event) => {
+  const typing = ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName);
+  if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
+  const ids = visibleIds();
+  const position = ids.indexOf(state.selectedId);
+  if (event.key === "j" && position < ids.length - 1) selectTicket(ids[position + 1]);
+  if (event.key === "k" && position > 0) selectTicket(ids[position - 1]);
+  if (event.key === "r" && state.selectedId && !$("#run-agent").disabled) runAgent();
+  if (event.key === "/") {
+    event.preventDefault();
+    $("#search").focus();
+  }
+});
+
 init();
