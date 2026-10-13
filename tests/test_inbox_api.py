@@ -85,3 +85,10 @@ def test_audit_trail_lists_agent_actions(inbox):
     inbox.post("/api/tickets/TCK-1001/run")
     actions = [entry["action"] for entry in inbox.get("/api/audit").json()]
     assert "refund_order" in actions and "verify_identity" in actions
+
+
+def test_static_ui_is_served(inbox):
+    page = inbox.get("/")
+    assert page.status_code == 200 and "ticketpilot inbox" in page.text
+    assert inbox.get("/app.js").status_code == 200
+    assert inbox.get("/styles.css").headers["content-type"].startswith("text/css")
