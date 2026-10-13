@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ticketpilot inbox</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">ticketpilot</span>
+    </div>
+    <div class="topbar-meta">
+      <span id="model-badge" class="badge badge-muted">loading</span>
+      <span id="limits-badge" class="badge badge-muted"></span>
+      <button id="refresh" class="btn btn-ghost" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="queue" aria-label="Ticket queue">
+      <div class="queue-tools">
+        <input id="search" class="input" type="search" placeholder="Search tickets" aria-label="Search tickets">
+        <div id="filters" class="filters" role="tablist">
+          <button class="chip is-active" data-filter="all" type="button">All</button>
+          <button class="chip" data-filter="open" type="button">Open</button>
+          <button class="chip" data-filter="awaiting_approval" type="button">Approval</button>
+          <button class="chip" data-filter="awaiting_review" type="button">Review</button>
+          <button class="chip" data-filter="done" type="button">Done</button>
+        </div>
+      </div>
+      <ul id="queue-list" class="queue-list"></ul>
+      <p id="queue-empty" class="empty" hidden>No tickets match.</p>
+    </aside>
+
+    <section class="detail" aria-live="polite">
+      <div id="detail-empty" class="placeholder">
+        <h2>Select a ticket</h2>
+        <p>Pick a ticket from the queue to see the triage result, what the agent wants to do and the drafted reply.</p>
+      </div>
+      <div id="detail" hidden>
+        <div class="detail-head">
+          <div>
+            <p id="detail-id" class="eyebrow"></p>
+            <h1 id="detail-subject"></h1>
+            <p id="detail-from" class="muted"></p>
+          </div>
+          <button id="run-agent" class="btn btn-primary" type="button">Run agent</button>
+        </div>
+        <div id="triage" class="triage-card"></div>
+        <article class="message">
+          <h2 class="section-title">Customer message</h2>
+          <pre id="detail-body" class="message-body"></pre>
+        </article>
+        <div id="duplicates" class="notice" hidden></div>
+        <div id="notes-block" hidden>
+          <h2 class="section-title">Internal notes</h2>
+          <ul id="notes" class="notes"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="proposal" aria-label="Agent proposal">
+      <div id="proposal-empty" class="placeholder">
+        <h2>Agent proposal</h2>
+        <p>Actions the agent took or wants to take show up here once you run it.</p>
+      </div>
+      <div id="proposal" hidden>
+        <div id="approvals" class="approvals" hidden>
+          <h2 class="section-title">Waiting for your approval</h2>
+          <ul id="approval-list" class="approval-list"></ul>
+          <div class="approval-actions">
+            <input id="reviewer" class="input" value="reviewer" aria-label="Reviewer name">
+            <button id="submit-approvals" class="btn btn-primary" type="button">Submit decisions</button>
+          </div>
+        </div>
+        <h2 class="section-title">Actions</h2>
+        <ol id="actions" class="timeline"></ol>
+        <div class="draft">
+          <div class="draft-head">
+            <h2 class="section-title">Draft reply</h2>
+            <span id="draft-flag" class="badge" hidden></span>
+          </div>
+          <textarea id="draft-text" class="draft-text" rows="12" aria-label="Draft reply"></textarea>
+          <div id="citations" class="chips"></div>
+          <div class="draft-actions">
+            <button id="save-draft" class="btn" type="button">Save draft</button>
+            <button id="send-reply" class="btn btn-primary" type="button">Approve and send</button>
+          </div>
+          <p id="draft-status" class="muted small"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
