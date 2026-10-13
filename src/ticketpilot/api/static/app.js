@@ -138,6 +138,7 @@ function renderQueue() {
 
 async function loadTickets() {
   state.tickets = await api("/api/tickets");
+  $("#queue-empty").textContent = "No tickets match.";
   renderQueue();
 }
 
@@ -426,6 +427,8 @@ async function init() {
     $("#limits-badge").textContent = `auto refund up to $${state.config.auto_refund_limit}`;
     await loadTickets();
   } catch (error) {
+    $("#queue-empty").hidden = false;
+    $("#queue-empty").textContent = "Could not reach the ticketpilot api.";
     toast(error.message, "error");
   }
 }
