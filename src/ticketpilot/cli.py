@@ -81,6 +81,42 @@ def kb_search(
         typer.echo(f"{hit.score:8.3f}  {hit.article_id:32s} {hit.chunk.heading}")
 
 
+@app.command("helpdesk")
+def helpdesk(
+    host: str = "127.0.0.1",
+    port: int = 8001,
+    reset: bool = typer.Option(False, help="Delete the sqlite file and seed fresh demo data"),
+) -> None:
+    import uvicorn
+
+    from ticketpilot.helpdesk.app import create_app
+
+    path = get_settings().helpdesk_db
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if reset and path.exists():
+        path.unlink()
+    uvicorn.run(create_app(path), host=host, port=port)
+
+
+@app.command("serve")
+def serve(
+    host: str = "127.0.0.1",
+    port: int = 8000,
+    llm: str = typer.Option(None, help="anthropic or scripted, overrides TICKETPILOT_LLM"),
+) -> None:
+    import os
+
+    import uvicorn
+
+    if llm:
+        os.environ["TICKETPILOT_LLM"] = llm
+    from ticketpilot.api.app import create_api
+    from ticketpilot.api.container import build_container
+
+    settings = get_settings()
+    uvicorn.run(create_api(build_container(settings)), host=host, port=port)
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     app()
