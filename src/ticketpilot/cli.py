@@ -12,7 +12,9 @@ app = typer.Typer(help="Ticket triage, resolution agent and inbox", no_args_is_h
 data_app = typer.Typer(help="Datasets", no_args_is_help=True)
 triage_app = typer.Typer(help="Triage models", no_args_is_help=True)
 kb_app = typer.Typer(help="Knowledge base", no_args_is_help=True)
+eval_app = typer.Typer(help="Benchmarks, results are written to results/", no_args_is_help=True)
 app.add_typer(data_app, name="data")
+app.add_typer(eval_app, name="eval")
 app.add_typer(triage_app, name="triage")
 app.add_typer(kb_app, name="kb")
 
@@ -115,6 +117,53 @@ def serve(
 
     settings = get_settings()
     uvicorn.run(create_api(build_container(settings)), host=host, port=port)
+
+
+def _results_dir(output: Path | None) -> Path:
+    return output or get_settings().root / "results"
+
+
+@eval_app.command("triage")
+def eval_triage(
+    output: Path = typer.Option(None),
+    tasks: list[str] = typer.Option(None, "--task", help="Limit to these tasks"),
+    epochs: int = typer.Option(3),
+) -> None:
+    from ticketpilot.evaluation import triage_eval
+
+    triage_eval.run(_results_dir(output), tasks or None, epochs)
+
+
+@eval_app.command("retrieval")
+def eval_retrieval(output: Path = typer.Option(None)) -> None:
+    from ticketpilot.evaluation import retrieval_eval
+
+    for row in retrieval_eval.run(_results_dir(output)):
+        typer.echo(json.dumps(row))
+
+
+@eval_app.command("duplicates")
+def eval_duplicates(output: Path = typer.Option(None)) -> None:
+    from ticketpilot.evaluation import duplicate_eval
+
+    for row in duplicate_eval.run(_results_dir(output)):
+        typer.echo(json.dumps(row))
+
+
+@eval_app.command("agent")
+def eval_agent(output: Path = typer.Option(None)) -> None:
+    from ticketpilot.evaluation import agent_eval
+
+    for row in agent_eval.run(_results_dir(output)):
+        typer.echo(json.dumps(row))
+
+
+@eval_app.command("all")
+def eval_all(output: Path = typer.Option(None), epochs: int = typer.Option(3)) -> None:
+    eval_triage(output, None, epochs)
+    eval_retrieval(output)
+    eval_duplicates(output)
+    eval_agent(output)
 
 
 def main() -> None:
