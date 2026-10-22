@@ -37,6 +37,7 @@ class Decision:
 class PolicyContext:
     ticket: Ticket
     verified_customers: set[str] = field(default_factory=set)
+    refunded_so_far: float = 0.0
 
 
 ALLOW = Decision("allow", "default", "no restriction applies")
@@ -118,7 +119,7 @@ class PolicyEngine:
         failed = self._require_verified(order["customer_id"], context)
         if failed:
             return failed
-        amount = float(args.get("amount", 0))
+        amount = round(float(args.get("amount", 0)), 2)
         balance = round(order["amount"] - order["refunded"], 2)
         if order["status"] not in ("paid", "provisioned"):
             return _deny("order_status", f"order is {order['status']} and cannot be refunded")
@@ -135,10 +136,10 @@ class PolicyEngine:
                 "refund_ceiling",
                 f"{amount:.2f} is above the {self.config.max_refund:.2f} limit for support, escalate to billing",
             )
-        if amount > self.config.auto_refund_limit:
+        if amount + context.refunded_so_far > self.config.auto_refund_limit:
             return Decision(
                 "require_approval",
                 "refund_approval",
-                f"refunds above {self.config.auto_refund_limit:.2f} need human approval",
+                f"refunds above {self.config.auto_refund_limit:.2f} in total on one ticket need human approval",
             )
         return Decision("allow", "refund_auto_limit", f"within the {self.config.auto_refund_limit:.2f} automatic limit")
