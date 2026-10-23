@@ -158,3 +158,19 @@ def test_disabling_policy_lets_unsafe_calls_through(helpdesk, retriever):
     agent = make_agent(helpdesk, retriever, turns, enforce_policy=False)
     result = agent.start(make_ticket(helpdesk))
     assert result.actions[0]["status"] == "executed"
+
+
+def test_parallel_refunds_in_one_turn_share_the_automatic_limit(helpdesk, retriever):
+    ticket = make_ticket(helpdesk, email="elena.silva@stonebridge.co", body="Refund ORD-53010")
+    turns = [
+        ai_with_calls(tool_call("verify_identity", customer_id="C-1007")),
+        ai_with_calls(
+            tool_call("refund_order", order_id="ORD-53010", amount=30.0, reason="first part"),
+            tool_call("refund_order", order_id="ORD-53010", amount=30.0, reason="second part"),
+        ),
+        ai_with_calls(text="DONE"),
+    ]
+    paused = make_agent(helpdesk, retriever, turns).start(ticket)
+    assert paused.status == "awaiting_approval"
+    assert len(paused.pending_approvals) == 1
+    assert helpdesk.get("/orders/ORD-53010").json()["refunded"] == 0.0

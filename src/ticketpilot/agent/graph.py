@@ -102,6 +102,8 @@ def build_graph(deps: AgentDeps, checkpointer: BaseCheckpointSaver | None = None
             else:
                 decision = Decision("allow", "policy_disabled", "policy enforcement is switched off")
             decisions[call["id"]] = _decision_dict(decision)
+            if call["name"] == "refund_order" and decision.allowed:
+                context.refunded_so_far += float(call["args"].get("amount", 0))
         return {"decisions": decisions}
 
     def after_guard(state: AgentState) -> Literal["approval", "tools"]:
