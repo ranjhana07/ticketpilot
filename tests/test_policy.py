@@ -100,3 +100,18 @@ def test_safe_tools_are_always_allowed(engine):
     ctx = context("x@y.z")
     for tool in ("escalate_to_human", "add_internal_note", "search_knowledge_base", "verify_identity"):
         assert engine.evaluate(tool, {}, ctx).allowed
+
+
+def test_automatic_refunds_cannot_be_split_to_dodge_the_limit(engine):
+    ticket = Ticket(ticket_id="TCK-X", subject="", body="", from_email="elena.silva@stonebridge.co")
+    args = {"order_id": "ORD-53010", "amount": 30.0, "reason": "mistake"}
+    first = engine.evaluate("refund_order", args, PolicyContext(ticket, {"C-1007"}, refunded_so_far=0.0))
+    second = engine.evaluate("refund_order", args, PolicyContext(ticket, {"C-1007"}, refunded_so_far=30.0))
+    assert first.verdict == "allow"
+    assert second.verdict == "require_approval"
+
+
+def test_amount_is_rounded_to_cents_before_comparison(engine):
+    args = {"order_id": "ORD-54001", "amount": 15.004, "reason": "mistake"}
+    decision = engine.evaluate("refund_order", args, context("aisha.kim@oakmere.com", "C-1009"))
+    assert decision.verdict == "allow"

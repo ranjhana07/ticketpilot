@@ -89,7 +89,12 @@ def build_graph(deps: AgentDeps, checkpointer: BaseCheckpointSaver | None = None
         return "draft"
 
     def guard_node(state: AgentState) -> dict[str, Any]:
-        context = PolicyContext(_ticket(state), set(state.get("verified_customers", [])))
+        refunded = sum(
+            float(action["args"].get("amount", 0))
+            for action in state.get("actions", [])
+            if action["tool"] == "refund_order" and action["status"] == "executed"
+        )
+        context = PolicyContext(_ticket(state), set(state.get("verified_customers", [])), refunded)
         decisions: dict[str, dict[str, Any]] = {}
         for call in state["messages"][-1].tool_calls:
             if deps.enforce_policy:
@@ -97,6 +102,8 @@ def build_graph(deps: AgentDeps, checkpointer: BaseCheckpointSaver | None = None
             else:
                 decision = Decision("allow", "policy_disabled", "policy enforcement is switched off")
             decisions[call["id"]] = _decision_dict(decision)
+            if call["name"] == "refund_order" and decision.allowed:
+                context.refunded_so_far += float(call["args"].get("amount", 0))
         return {"decisions": decisions}
 
     def after_guard(state: AgentState) -> Literal["approval", "tools"]:
