@@ -37,23 +37,25 @@ class BM25Index:
         document_frequency: Counter[str] = Counter()
         for counts in self.term_counts:
             document_frequency.update(counts.keys())
+        self.postings: dict[str, list[int]] = {}
+        for position, counts in enumerate(self.term_counts):
+            for term in counts:
+                self.postings.setdefault(term, []).append(position)
         size = len(documents)
         self.idf = {
             term: math.log(1 + (size - df + 0.5) / (df + 0.5)) for term, df in document_frequency.items()
         }
 
     def scores(self, query: str) -> list[float]:
-        terms = tokenize(query)
-        result = []
-        for counts, length in zip(self.term_counts, self.lengths):
-            score = 0.0
-            for term in terms:
-                frequency = counts.get(term, 0)
-                if not frequency:
-                    continue
-                norm = frequency + self.k1 * (1 - self.b + self.b * length / self.average_length)
-                score += self.idf[term] * frequency * (self.k1 + 1) / norm
-            result.append(score)
+        result = [0.0] * len(self.term_counts)
+        for term in set(tokenize(query)):
+            idf = self.idf.get(term)
+            if idf is None:
+                continue
+            for position in self.postings[term]:
+                frequency = self.term_counts[position][term]
+                norm = frequency + self.k1 * (1 - self.b + self.b * self.lengths[position] / self.average_length)
+                result[position] += idf * frequency * (self.k1 + 1) / norm
         return result
 
     def search(self, query: str, k: int = 10) -> list[tuple[int, float]]:
