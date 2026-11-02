@@ -51,7 +51,22 @@ class SentenceTransformerEmbedder:
         return np.asarray(vectors, dtype=np.float32)
 
 
-def get_embedder(name: str = "minilm") -> Embedder:
-    if name == "hashing":
-        return HashingEmbedder()
-    return SentenceTransformerEmbedder()
+class CachedEmbedder:
+    def __init__(self, inner: Embedder, max_entries: int = 4096) -> None:
+        self.inner = inner
+        self.max_entries = max_entries
+        self._cache: dict[str, np.ndarray] = {}
+
+    def encode(self, texts: Sequence[str]) -> np.ndarray:
+        missing = [text for text in dict.fromkeys(texts) if text not in self._cache]
+        if missing:
+            if len(self._cache) + len(missing) > self.max_entries:
+                self._cache.clear()
+            for text, vector in zip(missing, self.inner.encode(missing)):
+                self._cache[text] = vector
+        return np.stack([self._cache[text] for text in texts]) if texts else np.zeros((0, 0), dtype=np.float32)
+
+
+def get_embedder(name: str = "minilm", cached: bool = True) -> Embedder:
+    inner: Embedder = HashingEmbedder() if name == "hashing" else SentenceTransformerEmbedder()
+    return CachedEmbedder(inner) if cached else inner
