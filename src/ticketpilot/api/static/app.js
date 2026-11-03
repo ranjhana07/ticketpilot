@@ -95,13 +95,30 @@ function matchesFilter(ticket) {
   if (state.filter === "open" && DONE_STATUSES.has(status)) return false;
   if (state.filter === "awaiting_approval" && status !== "awaiting_approval") return false;
   if (state.filter === "awaiting_review" && status !== "awaiting_review") return false;
+  if (state.filter === "escalated" && status !== "escalated") return false;
   if (state.filter === "done" && !DONE_STATUSES.has(status)) return false;
   if (!state.query) return true;
   const haystack = `${ticket.id} ${ticket.subject} ${ticket.customer_email} ${ticket.customer_name}`.toLowerCase();
   return haystack.includes(state.query.toLowerCase());
 }
 
+function updateFilterCounts() {
+  const counts = { all: 0, open: 0, awaiting_approval: 0, awaiting_review: 0, escalated: 0, done: 0 };
+  for (const ticket of state.tickets) {
+    counts.all += 1;
+    if (DONE_STATUSES.has(ticket.status)) counts.done += 1;
+    else counts.open += 1;
+    if (ticket.status in counts) counts[ticket.status] += 1;
+  }
+  document.querySelectorAll("#filters .chip").forEach((chip) => {
+    const label = chip.dataset.label || chip.textContent;
+    chip.dataset.label = label;
+    chip.textContent = `${label} ${counts[chip.dataset.filter]}`;
+  });
+}
+
 function renderQueue() {
+  updateFilterCounts();
   const list = $("#queue-list");
   list.replaceChildren();
   const visible = state.tickets.filter(matchesFilter);
