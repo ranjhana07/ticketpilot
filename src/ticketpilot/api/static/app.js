@@ -131,6 +131,7 @@ function renderQueue() {
         class: `queue-item${ticket.id === state.selectedId ? " is-selected" : ""}`,
         type: "button",
         "data-id": ticket.id,
+        "data-priority": triage.priority || false,
         onclick: () => selectTicket(ticket.id),
       },
       el(

@@ -618,3 +618,15 @@ p {
     display: none;
   }
 }
+
+.queue-item[data-priority="urgent"] {
+  border-left: 3px solid var(--bad);
+}
+
+.queue-item[data-priority="high"] {
+  border-left: 3px solid var(--warn);
+}
+
+.queue-item.is-selected[data-priority] {
+  box-shadow: none;
+}
