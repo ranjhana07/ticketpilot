@@ -19,6 +19,7 @@ from ticketpilot.config import Settings
 from ticketpilot.embeddings import Embedder, get_embedder
 from ticketpilot.kb.rerank import CrossEncoderReranker, OverlapReranker, Reranker
 from ticketpilot.kb.retriever import HybridRetriever
+from ticketpilot.triage.duplicates import DuplicateDetector
 from ticketpilot.triage.pipeline import TriagePipeline, load_pipeline
 
 log = logging.getLogger("ticketpilot")
@@ -31,6 +32,7 @@ class Container:
     agent: SupportAgent
     triage: TriagePipeline | None
     retriever: HybridRetriever
+    indexed: set[str] = field(default_factory=set)
     lock: threading.Lock = field(default_factory=threading.Lock)
 
 
@@ -53,6 +55,8 @@ def build_container(
             triage = load_pipeline(settings.models_dir)
         except FileNotFoundError:
             log.warning("no trained triage models in %s, running without intent and priority predictions", settings.models_dir)
+    if triage is not None and triage.duplicate_detector is None:
+        triage.duplicate_detector = DuplicateDetector(embedder, threshold=settings.duplicate_threshold)
     policy = PolicyEngine(helpdesk, PolicyConfig.from_settings(settings), clock or utc_now)
     deps = AgentDeps(
         llm=llm or build_llm(settings),
