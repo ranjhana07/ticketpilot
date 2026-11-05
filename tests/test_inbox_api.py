@@ -92,3 +92,11 @@ def test_static_ui_is_served(inbox):
     assert page.status_code == 200 and "ticketpilot inbox" in page.text
     assert inbox.get("/app.js").status_code == 200
     assert inbox.get("/styles.css").headers["content-type"].startswith("text/css")
+
+
+def test_near_identical_tickets_are_flagged_as_duplicates(inbox, helpdesk):
+    body = "The password reset link has expired, please send me a new reset link for my account."
+    first = helpdesk.post("/tickets", json={"customer_email": "x@y.io", "subject": "Reset link", "body": body}).json()
+    second = helpdesk.post("/tickets", json={"customer_email": "x@y.io", "subject": "Reset link", "body": body + " Thanks."}).json()
+    queue = {t["id"]: t for t in inbox.get("/api/tickets").json()}
+    assert first["id"] in [d["ticket_id"] for d in queue[second["id"]]["triage"]["duplicates"]]

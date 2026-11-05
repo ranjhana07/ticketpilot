@@ -56,12 +56,23 @@ def create_api(container: Container) -> FastAPI:
     async def helpdesk_error(_: Request, error: HelpdeskError) -> JSONResponse:
         return JSONResponse(status_code=error.status, content={"detail": error.detail})
 
+    def index_ticket(raw: dict[str, Any]) -> None:
+        detector = container.triage.duplicate_detector if container.triage else None
+        if detector is not None and raw["id"] not in container.indexed:
+            detector.add([_ticket_from_raw(raw)])
+            container.indexed.add(raw["id"])
+
     def triaged(raw: dict[str, Any]) -> dict[str, Any]:
-        if raw.get("triage") or container.triage is None:
+        if container.triage is None:
+            return raw
+        if raw.get("triage"):
+            index_ticket(raw)
             return raw
         result = container.triage.analyze(_ticket_from_raw(raw)).to_dict()
         status = "triaged" if raw["status"] == "new" else raw["status"]
-        return helpdesk.patch_ticket(raw["id"], triage=result, status=status)
+        updated = helpdesk.patch_ticket(raw["id"], triage=result, status=status)
+        index_ticket(raw)
+        return updated
 
     def store(ticket_id: str, result: RunResult) -> dict[str, Any]:
         proposal = {
@@ -100,7 +111,7 @@ def create_api(container: Container) -> FastAPI:
     @app.get("/api/tickets")
     def list_tickets(status: str | None = None) -> list[dict[str, Any]]:
         with container.lock:
-            tickets = [triaged(raw) for raw in helpdesk.list_tickets(status)]
+            tickets = [triaged(raw) for raw in reversed(helpdesk.list_tickets(status))]
         return sorted(tickets, key=lambda raw: (_priority_rank(raw), raw["created_at"]), reverse=True)
 
     @app.get("/api/tickets/{ticket_id}")
