@@ -111,7 +111,7 @@ def create_api(container: Container) -> FastAPI:
     @app.get("/api/tickets")
     def list_tickets(status: str | None = None) -> list[dict[str, Any]]:
         with container.lock:
-            tickets = [triaged(raw) for raw in helpdesk.list_tickets(status)]
+            tickets = [triaged(raw) for raw in reversed(helpdesk.list_tickets(status))]
         return sorted(tickets, key=lambda raw: (_priority_rank(raw), raw["created_at"]), reverse=True)
 
     @app.get("/api/tickets/{ticket_id}")
