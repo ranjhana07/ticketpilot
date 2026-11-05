@@ -1,5 +1,4 @@
 import pytest
-from fastapi.testclient import TestClient
 
 from ticketpilot.agent.client import HelpdeskClient
 from ticketpilot.agent.tools import ACCOUNT_CHANGING_TOOLS, READ_TOOLS, TOOL_SPECS, ToolBox

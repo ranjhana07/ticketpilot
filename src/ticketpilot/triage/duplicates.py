@@ -7,7 +7,6 @@ import numpy as np
 
 from ticketpilot.data.schemas import Ticket
 from ticketpilot.embeddings import Embedder
-from ticketpilot.triage.pii import EMAIL
 
 ORDER_ID = re.compile(r"\bORD-\d{4,8}\b", re.IGNORECASE)
 
