@@ -150,6 +150,13 @@ def eval_duplicates(output: Path = typer.Option(None)) -> None:
         typer.echo(json.dumps(row))
 
 
+@eval_app.command("preprocessing")
+def eval_preprocessing(output: Path = typer.Option(None)) -> None:
+    from ticketpilot.evaluation import preprocessing_eval
+
+    typer.echo(json.dumps(preprocessing_eval.run(_results_dir(output)), indent=2))
+
+
 @eval_app.command("agent")
 def eval_agent(output: Path = typer.Option(None)) -> None:
     from ticketpilot.evaluation import agent_eval
@@ -163,6 +170,7 @@ def eval_all(output: Path = typer.Option(None), epochs: int = typer.Option(3)) -
     eval_triage(output, None, epochs)
     eval_retrieval(output)
     eval_duplicates(output)
+    eval_preprocessing(output)
     eval_agent(output)
 
 
