@@ -60,26 +60,37 @@ def make_phone(rng: random.Random) -> str:
     return rng.choice([f"+1 {area} {mid} {last}", f"({area}) {mid}-{last}", f"+44 7{rng.randint(100, 999)} {rng.randint(100000, 999999)}"])
 
 
-def make_signature(rng: random.Random, name: str, email: str, intent: str) -> str:
+def make_signature(rng: random.Random, name: str, email: str, intent: str) -> tuple[str, list[str]]:
     lines = [name]
+    sensitive = [name]
     if rng.random() < 0.4:
         lines.append(email)
+        sensitive.append(email)
     if rng.random() < 0.3:
-        lines.append(f"Phone: {make_phone(rng)}")
+        phone = make_phone(rng)
+        lines.append(f"Phone: {phone}")
+        sensitive.append(phone)
     if intent in ("billing_refund", "invoice_request") and rng.random() < 0.25:
         card = luhn_card(rng)
-        lines.append(rng.choice([f"Card on file ends in {card[-4:]}", f"Card used: {card[:4]} {card[4:8]} {card[8:12]} {card[12:]}"]))
+        spaced = f"{card[:4]} {card[4:8]} {card[8:12]} {card[12:]}"
+        lines.append(rng.choice([f"Card on file ends in {card[-4:]}", f"Card used: {spaced}"]))
+        if spaced in lines[-1]:
+            sensitive.append(spaced)
     if intent == "security_report" and rng.random() < 0.5:
-        lines.append(f"Seen from IP 203.0.113.{rng.randint(2, 250)}")
-    return "\n".join(lines)
+        address = f"203.0.113.{rng.randint(2, 250)}"
+        lines.append(f"Seen from IP {address}")
+        sensitive.append(address)
+    return "\n".join(lines), sensitive
 
 
-def compose_message(rng: random.Random, core: str, name: str, email: str, intent: str) -> str:
+def compose_message(rng: random.Random, core: str, name: str, email: str, intent: str) -> tuple[str, list[str]]:
     parts = [rng.choice(GREETINGS), core, rng.choice(CLOSINGS)]
     message = "\n".join(part for part in parts if part)
+    sensitive: list[str] = []
     if rng.random() < 0.55:
-        message = f"{message}\n{make_signature(rng, name, email, intent)}"
-    return message
+        signature, sensitive = make_signature(rng, name, email, intent)
+        message = f"{message}\n{signature}"
+    return message, sensitive
 
 
 PRIORITY_WEIGHTS: dict[str, tuple[float, float, float, float]] = {
@@ -183,7 +194,7 @@ def make_ticket(
         body = add_typos(rng, body)
     if rng.random() < 0.12:
         body = body.lower()
-    body = compose_message(rng, body, f"{first} {last}", email, intent)
+    body, sensitive = compose_message(rng, body, f"{first} {last}", email, intent)
     priority = flip_priority(rng, cue_priority) if rng.random() < LABEL_NOISE else cue_priority
     entity = order_id if intent in ORDER_INTENTS else email
     created = datetime(2026, 1, 1) + timedelta(minutes=rng.randint(0, 60 * 24 * 120))
@@ -198,6 +209,7 @@ def make_ticket(
         intent=intent,
         priority=priority,
         entity=entity,
+        meta={"pii": sensitive},
     )
 
 
