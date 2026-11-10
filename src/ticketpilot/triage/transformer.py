@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 import time
 from pathlib import Path
@@ -13,6 +14,11 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_
 DEFAULT_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
+def configure_threads() -> None:
+    requested = os.environ.get("TICKETPILOT_TORCH_THREADS")
+    torch.set_num_threads(int(requested) if requested else min(8, os.cpu_count() or 1))
+
+
 def _seed_everything(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -21,6 +27,7 @@ def _seed_everything(seed: int) -> None:
 
 class TransformerClassifier:
     def __init__(self, model_name: str = DEFAULT_MODEL, max_length: int = 64) -> None:
+        configure_threads()
         self.model_name = model_name
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
