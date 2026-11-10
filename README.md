@@ -95,3 +95,57 @@ All settings are environment variables, see `.env.example`.
 | `MAX_REFUND_USD` | `500` | Refunds above this are denied and escalated |
 | `REFUND_WINDOW_DAYS` | `30` | Orders older than this cannot be refunded by support |
 | `AGENT_MAX_STEPS` | `8` | Cap on agent turns per ticket |
+
+## Usage
+
+```
+ticketpilot data download                 fetch the Bitext customer support dataset
+ticketpilot data generate --count 2000    write synthetic Loomwork tickets as jsonl
+ticketpilot triage train --task T --kind K
+ticketpilot triage predict "text of a ticket"
+ticketpilot kb search "how do I cancel"
+ticketpilot helpdesk --reset              mock helpdesk on :8001, seeded with demo data
+ticketpilot serve [--llm scripted]        inbox API and UI on :8000
+ticketpilot eval triage|retrieval|duplicates|agent|all
+```
+
+Tasks for `triage train` are `bitext_intent`, `synthetic_intent` and `synthetic_priority`. Kinds are `baseline` (TF-IDF with logistic regression) and `transformer` (fine-tuned MiniLM). The pipeline prefers a transformer model when one is present and falls back to the baseline.
+
+A typical session in the inbox: open a ticket, press **Run agent**, read the action timeline, approve or reject anything held for approval, edit the draft reply and press **Approve and send**. Sending only marks the ticket as replied and leaves a note, no email leaves the machine. Keyboard shortcuts: `j` and `k` move through the queue, `r` runs the agent, `/` focuses the search box.
+
+Pending approvals live in the memory of the API process (LangGraph `InMemorySaver`). If the API restarts while a ticket is waiting, run the agent on that ticket again.
+
+## API reference
+
+Inbox API (port 8000, also serves the UI at `/`):
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/health` | Liveness |
+| `GET /api/config` | Provider, model, refund limits, whether triage models are loaded |
+| `GET /api/tickets?status=` | Queue, triaged on first read, sorted by predicted priority |
+| `GET /api/tickets/{id}` | Ticket with triage, proposal, draft and internal notes |
+| `POST /api/tickets/{id}/run` | Run the agent, store actions and draft, may pause for approval |
+| `POST /api/tickets/{id}/approve` | Body `{"decisions": {"<call_id>": "approve"\|"reject"}, "reviewer": "name"}`, resumes the graph |
+| `PUT /api/tickets/{id}/draft` | Body `{"reply": "..."}`, saves an edited draft |
+| `POST /api/tickets/{id}/send` | Body `{"reviewer": "name"}`, marks the ticket as replied |
+| `GET /api/audit` | Latest helpdesk audit entries |
+
+Mock helpdesk (port 8001):
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /customers/lookup?email=` | Customer with subscription |
+| `GET /customers/{id}` and `/customers/{id}/orders` | Customer and orders |
+| `POST /customers/{id}/verify` | Check that `requester_email` owns the account |
+| `POST /customers/{id}/reset-password` | Record a reset link, unlocks a locked account |
+| `PUT /customers/{id}/subscription` | Change plan or billing cycle, enterprise is refused |
+| `POST /customers/{id}/subscription/cancel` | Cancel at period end |
+| `GET /orders/{id}` | Order with refunded balance |
+| `POST /orders/{id}/refund` | Refund up to the remaining balance |
+| `GET/POST /tickets`, `GET/PATCH /tickets/{id}` | Tickets |
+| `GET/POST /tickets/{id}/notes` | Internal notes |
+| `POST /tickets/{id}/escalate` | Hand over to billing, security, support_lead, engineering or sales |
+| `GET /audit` | Audit log of every state change |
+
+Agent tools (LangChain `StructuredTool`): `lookup_customer`, `verify_identity`, `get_order`, `list_customer_orders`, `refund_order`, `reset_password`, `update_subscription`, `cancel_subscription`, `escalate_to_human`, `add_internal_note`, `search_knowledge_base`. The ticket id and the requester address are bound by the runtime and are not part of the schema the model sees.
