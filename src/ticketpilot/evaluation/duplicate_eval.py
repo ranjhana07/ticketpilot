@@ -6,11 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
+from ticketpilot.config import get_settings
 from ticketpilot.data.synthetic import make_duplicate_pairs
 from ticketpilot.embeddings import get_embedder
 from ticketpilot.triage.duplicates import entities_conflict
 
-THRESHOLDS = [round(0.3 + 0.01 * step, 2) for step in range(66)]
+THRESHOLDS = [round(0.1 + 0.01 * step, 2) for step in range(86)]
 
 
 def _scores(embedder, pairs) -> np.ndarray:
@@ -50,7 +51,7 @@ def evaluate(embedder_name: str, dev_pairs: int = 600, test_pairs: int = 900) ->
         dev_allowed = np.array([not (guard and entities_conflict(a, b)) for a, b, _ in dev])
         test_allowed = np.array([not (guard and entities_conflict(a, b)) for a, b, _ in test])
         threshold = best_threshold(dev_scores, dev_labels, dev_allowed)
-        for name, value in (("tuned_on_dev", threshold), ("fixed_0.80", 0.8)):
+        for name, value in (("tuned_on_dev", threshold), ("default_setting", get_settings().duplicate_threshold)):
             metrics = precision_recall(test_labels, (test_scores >= value) & test_allowed)
             rows.append(
                 {

@@ -37,7 +37,7 @@ class Settings:
     auto_refund_limit: float = field(default_factory=lambda: _env_float("AUTO_REFUND_LIMIT_USD", 50.0))
     max_refund: float = field(default_factory=lambda: _env_float("MAX_REFUND_USD", 500.0))
     refund_window_days: int = field(default_factory=lambda: _env_int("REFUND_WINDOW_DAYS", 30))
-    duplicate_threshold: float = field(default_factory=lambda: _env_float("DUPLICATE_THRESHOLD", 0.8))
+    duplicate_threshold: float = field(default_factory=lambda: _env_float("DUPLICATE_THRESHOLD", 0.4))
     agent_max_steps: int = field(default_factory=lambda: _env_int("AGENT_MAX_STEPS", 8))
 
     @classmethod
