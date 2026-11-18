@@ -1,0 +1,9 @@
+embedder,entity_guard,threshold_mode,threshold,n_pairs,n_positive,precision,recall,f1
+hashing,False,tuned_on_dev,0.12,900,300,0.443,0.6867,0.5386
+hashing,False,default_setting,0.4,900,300,0.5,0.18,0.2647
+hashing,True,tuned_on_dev,0.1,900,300,1.0,0.7667,0.8679
+hashing,True,default_setting,0.4,900,300,1.0,0.18,0.3051
+minilm,False,tuned_on_dev,0.37,900,300,0.4665,0.79,0.5866
+minilm,False,default_setting,0.4,900,300,0.4764,0.7733,0.5896
+minilm,True,tuned_on_dev,0.1,900,300,1.0,0.99,0.995
+minilm,True,default_setting,0.4,900,300,1.0,0.7733,0.8722

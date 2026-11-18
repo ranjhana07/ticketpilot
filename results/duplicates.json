@@ -1,0 +1,90 @@
+[
+  {
+    "embedder": "hashing",
+    "entity_guard": false,
+    "threshold_mode": "tuned_on_dev",
+    "threshold": 0.12,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 0.443,
+    "recall": 0.6867,
+    "f1": 0.5386
+  },
+  {
+    "embedder": "hashing",
+    "entity_guard": false,
+    "threshold_mode": "default_setting",
+    "threshold": 0.4,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 0.5,
+    "recall": 0.18,
+    "f1": 0.2647
+  },
+  {
+    "embedder": "hashing",
+    "entity_guard": true,
+    "threshold_mode": "tuned_on_dev",
+    "threshold": 0.1,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 1.0,
+    "recall": 0.7667,
+    "f1": 0.8679
+  },
+  {
+    "embedder": "hashing",
+    "entity_guard": true,
+    "threshold_mode": "default_setting",
+    "threshold": 0.4,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 1.0,
+    "recall": 0.18,
+    "f1": 0.3051
+  },
+  {
+    "embedder": "minilm",
+    "entity_guard": false,
+    "threshold_mode": "tuned_on_dev",
+    "threshold": 0.37,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 0.4665,
+    "recall": 0.79,
+    "f1": 0.5866
+  },
+  {
+    "embedder": "minilm",
+    "entity_guard": false,
+    "threshold_mode": "default_setting",
+    "threshold": 0.4,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 0.4764,
+    "recall": 0.7733,
+    "f1": 0.5896
+  },
+  {
+    "embedder": "minilm",
+    "entity_guard": true,
+    "threshold_mode": "tuned_on_dev",
+    "threshold": 0.1,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 1.0,
+    "recall": 0.99,
+    "f1": 0.995
+  },
+  {
+    "embedder": "minilm",
+    "entity_guard": true,
+    "threshold_mode": "default_setting",
+    "threshold": 0.4,
+    "n_pairs": 900,
+    "n_positive": 300,
+    "precision": 1.0,
+    "recall": 0.7733,
+    "f1": 0.8722
+  }
+]

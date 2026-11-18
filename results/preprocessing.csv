@@ -1,0 +1,4 @@
+component,metric,value
+pii_redaction,recall,1.0
+pii_redaction,values_still_present,0
+language_detection,accuracy,0.9977
