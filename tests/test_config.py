@@ -9,7 +9,7 @@ def test_defaults(monkeypatch):
     assert settings.max_refund == 500.0
     assert settings.refund_window_days == 30
     assert settings.llm_provider == "anthropic"
-    assert settings.duplicate_threshold == 0.8
+    assert settings.duplicate_threshold == 0.4
 
 
 def test_environment_overrides(monkeypatch):

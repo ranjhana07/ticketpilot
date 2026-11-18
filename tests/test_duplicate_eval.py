@@ -19,5 +19,5 @@ def test_best_threshold_separates_scores():
 
 def test_guard_never_lowers_precision_with_hashing_embedder():
     rows = evaluate("hashing", dev_pairs=90, test_pairs=120)
-    fixed = {r["entity_guard"]: r for r in rows if r["threshold_mode"] == "fixed_0.80"}
+    fixed = {r["entity_guard"]: r for r in rows if r["threshold_mode"] == "default_setting"}
     assert fixed[True]["precision"] >= fixed[False]["precision"]
