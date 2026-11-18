@@ -1,0 +1,5 @@
+mode,embedder,reranker,n_queries,n_chunks,mrr,hit@1,hit@3,hit@5,ms_per_query
+bm25,minilm,,65,116,0.8595,0.7846,0.9231,0.9692,0.06
+dense,minilm,,65,116,0.9564,0.9231,1.0,1.0,111.94
+hybrid,minilm,,65,116,0.9327,0.8769,0.9846,0.9846,0.22
+hybrid_rerank,minilm,cross-encoder,65,116,0.9474,0.9231,0.9692,0.9846,2325.35

@@ -1,0 +1,602 @@
+[
+  {
+    "task": "bitext_intent",
+    "model": "baseline",
+    "n_train": 4050,
+    "n_test": 1501,
+    "n_classes": 27,
+    "accuracy": 0.9973,
+    "macro_f1": 0.9974,
+    "weighted_f1": 0.9973,
+    "train_seconds": 5.0,
+    "inference_ms_per_ticket": 0.18,
+    "per_class": {
+      "cancel_order": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "change_order": {
+        "precision": 0.9649,
+        "recall": 0.9821,
+        "f1": 0.9735,
+        "support": 56
+      },
+      "change_shipping_address": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 54
+      },
+      "check_cancellation_fee": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 52
+      },
+      "check_invoice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "check_payment_methods": {
+        "precision": 0.9825,
+        "recall": 1.0,
+        "f1": 0.9912,
+        "support": 56
+      },
+      "check_refund_policy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "complaint": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "contact_customer_service": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "contact_human_agent": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "create_account": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "delete_account": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "delivery_options": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "delivery_period": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "edit_account": {
+        "precision": 0.9825,
+        "recall": 1.0,
+        "f1": 0.9912,
+        "support": 56
+      },
+      "get_invoice": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "get_refund": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "newsletter_subscription": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "payment_issue": {
+        "precision": 1.0,
+        "recall": 0.9821,
+        "f1": 0.991,
+        "support": 56
+      },
+      "place_order": {
+        "precision": 1.0,
+        "recall": 0.9643,
+        "f1": 0.9818,
+        "support": 56
+      },
+      "recover_password": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "registration_problems": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "review": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "set_up_shipping_address": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "switch_account": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "track_order": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "track_refund": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      }
+    }
+  },
+  {
+    "task": "bitext_intent",
+    "model": "transformer",
+    "n_train": 4050,
+    "n_test": 1501,
+    "n_classes": 27,
+    "accuracy": 0.978,
+    "macro_f1": 0.9782,
+    "weighted_f1": 0.9781,
+    "train_seconds": 1423.7,
+    "inference_ms_per_ticket": 4.861,
+    "per_class": {
+      "cancel_order": {
+        "precision": 1.0,
+        "recall": 0.9286,
+        "f1": 0.963,
+        "support": 56
+      },
+      "change_order": {
+        "precision": 0.918,
+        "recall": 1.0,
+        "f1": 0.9573,
+        "support": 56
+      },
+      "change_shipping_address": {
+        "precision": 0.9815,
+        "recall": 0.9815,
+        "f1": 0.9815,
+        "support": 54
+      },
+      "check_cancellation_fee": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 52
+      },
+      "check_invoice": {
+        "precision": 0.9167,
+        "recall": 0.9821,
+        "f1": 0.9483,
+        "support": 56
+      },
+      "check_payment_methods": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "check_refund_policy": {
+        "precision": 0.8358,
+        "recall": 1.0,
+        "f1": 0.9106,
+        "support": 56
+      },
+      "complaint": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "contact_customer_service": {
+        "precision": 1.0,
+        "recall": 0.9821,
+        "f1": 0.991,
+        "support": 56
+      },
+      "contact_human_agent": {
+        "precision": 0.9492,
+        "recall": 1.0,
+        "f1": 0.9739,
+        "support": 56
+      },
+      "create_account": {
+        "precision": 0.9655,
+        "recall": 1.0,
+        "f1": 0.9825,
+        "support": 56
+      },
+      "delete_account": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "delivery_options": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 55
+      },
+      "delivery_period": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "edit_account": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "get_invoice": {
+        "precision": 0.9808,
+        "recall": 0.9107,
+        "f1": 0.9444,
+        "support": 56
+      },
+      "get_refund": {
+        "precision": 1.0,
+        "recall": 0.9273,
+        "f1": 0.9623,
+        "support": 55
+      },
+      "newsletter_subscription": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "payment_issue": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 56
+      },
+      "place_order": {
+        "precision": 0.9818,
+        "recall": 0.9643,
+        "f1": 0.973,
+        "support": 56
+      },
+      "recover_password": {
+        "precision": 0.9821,
+        "recall": 1.0,
+        "f1": 0.991,
+        "support": 55
+      },
+      "registration_problems": {
+        "precision": 1.0,
+        "recall": 0.9107,
+        "f1": 0.9533,
+        "support": 56
+      },
+      "review": {
+        "precision": 1.0,
+        "recall": 0.9643,
+        "f1": 0.9818,
+        "support": 56
+      },
+      "set_up_shipping_address": {
+        "precision": 0.9821,
+        "recall": 0.9821,
+        "f1": 0.9821,
+        "support": 56
+      },
+      "switch_account": {
+        "precision": 0.9655,
+        "recall": 1.0,
+        "f1": 0.9825,
+        "support": 56
+      },
+      "track_order": {
+        "precision": 1.0,
+        "recall": 0.9818,
+        "f1": 0.9908,
+        "support": 55
+      },
+      "track_refund": {
+        "precision": 1.0,
+        "recall": 0.8929,
+        "f1": 0.9434,
+        "support": 56
+      }
+    }
+  },
+  {
+    "task": "synthetic_intent",
+    "model": "baseline",
+    "n_train": 4000,
+    "n_test": 1200,
+    "n_classes": 12,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "train_seconds": 3.6,
+    "inference_ms_per_ticket": 0.43,
+    "per_class": {
+      "account_locked": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 99
+      },
+      "billing_refund": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 83
+      },
+      "bug_report": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 106
+      },
+      "cancel_subscription": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 101
+      },
+      "change_plan": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 99
+      },
+      "data_export": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 100
+      },
+      "feature_request": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 119
+      },
+      "general_question": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 81
+      },
+      "invoice_request": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 115
+      },
+      "order_status": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 113
+      },
+      "password_reset": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 85
+      },
+      "security_report": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 99
+      }
+    }
+  },
+  {
+    "task": "synthetic_intent",
+    "model": "transformer",
+    "n_train": 4000,
+    "n_test": 1200,
+    "n_classes": 12,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "train_seconds": 1342.9,
+    "inference_ms_per_ticket": 12.18,
+    "per_class": {
+      "account_locked": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 99
+      },
+      "billing_refund": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 83
+      },
+      "bug_report": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 106
+      },
+      "cancel_subscription": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 101
+      },
+      "change_plan": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 99
+      },
+      "data_export": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 100
+      },
+      "feature_request": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 119
+      },
+      "general_question": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 81
+      },
+      "invoice_request": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 115
+      },
+      "order_status": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 113
+      },
+      "password_reset": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 85
+      },
+      "security_report": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 99
+      }
+    }
+  },
+  {
+    "task": "synthetic_priority",
+    "model": "baseline",
+    "n_train": 4000,
+    "n_test": 1200,
+    "n_classes": 4,
+    "accuracy": 0.9342,
+    "macro_f1": 0.9317,
+    "weighted_f1": 0.9341,
+    "train_seconds": 4.5,
+    "inference_ms_per_ticket": 0.463,
+    "per_class": {
+      "high": {
+        "precision": 0.9286,
+        "recall": 0.9137,
+        "f1": 0.9211,
+        "support": 313
+      },
+      "low": {
+        "precision": 0.9605,
+        "recall": 0.924,
+        "f1": 0.9419,
+        "support": 263
+      },
+      "normal": {
+        "precision": 0.9303,
+        "recall": 0.9531,
+        "f1": 0.9415,
+        "support": 490
+      },
+      "urgent": {
+        "precision": 0.9124,
+        "recall": 0.9328,
+        "f1": 0.9225,
+        "support": 134
+      }
+    }
+  },
+  {
+    "task": "synthetic_priority",
+    "model": "transformer",
+    "n_train": 4000,
+    "n_test": 1200,
+    "n_classes": 4,
+    "accuracy": 0.94,
+    "macro_f1": 0.9374,
+    "weighted_f1": 0.94,
+    "train_seconds": 1270.6,
+    "inference_ms_per_ticket": 23.486,
+    "per_class": {
+      "high": {
+        "precision": 0.9323,
+        "recall": 0.9233,
+        "f1": 0.9278,
+        "support": 313
+      },
+      "low": {
+        "precision": 0.9609,
+        "recall": 0.9354,
+        "f1": 0.948,
+        "support": 263
+      },
+      "normal": {
+        "precision": 0.9415,
+        "recall": 0.9531,
+        "f1": 0.9473,
+        "support": 490
+      },
+      "urgent": {
+        "precision": 0.913,
+        "recall": 0.9403,
+        "f1": 0.9265,
+        "support": 134
+      }
+    }
+  }
+]

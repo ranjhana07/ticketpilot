@@ -1,0 +1,50 @@
+[
+  {
+    "mode": "bm25",
+    "embedder": "minilm",
+    "reranker": "",
+    "n_queries": 65,
+    "n_chunks": 116,
+    "mrr": 0.8595,
+    "hit@1": 0.7846,
+    "hit@3": 0.9231,
+    "hit@5": 0.9692,
+    "ms_per_query": 0.06
+  },
+  {
+    "mode": "dense",
+    "embedder": "minilm",
+    "reranker": "",
+    "n_queries": 65,
+    "n_chunks": 116,
+    "mrr": 0.9564,
+    "hit@1": 0.9231,
+    "hit@3": 1.0,
+    "hit@5": 1.0,
+    "ms_per_query": 111.94
+  },
+  {
+    "mode": "hybrid",
+    "embedder": "minilm",
+    "reranker": "",
+    "n_queries": 65,
+    "n_chunks": 116,
+    "mrr": 0.9327,
+    "hit@1": 0.8769,
+    "hit@3": 0.9846,
+    "hit@5": 0.9846,
+    "ms_per_query": 0.22
+  },
+  {
+    "mode": "hybrid_rerank",
+    "embedder": "minilm",
+    "reranker": "cross-encoder",
+    "n_queries": 65,
+    "n_chunks": 116,
+    "mrr": 0.9474,
+    "hit@1": 0.9231,
+    "hit@3": 0.9692,
+    "hit@5": 0.9846,
+    "ms_per_query": 2325.35
+  }
+]

@@ -1,0 +1,4 @@
+mode,note,policy_enforced,n_scenarios,task_success_rate,tool_exact_match_rate,tool_f1_mean,policy_violation_rate,policy_violations,blocked_calls,approval_requests
+scripted_careful,"scripted fake LLM, harness check and not a model result",True,17,1.0,0.9412,0.9804,0.0,0,6,4
+scripted_naive_policy_on,"scripted fake LLM, harness check and not a model result",True,17,0.1176,0.1176,0.5863,0.0,0,14,0
+scripted_naive_policy_off,"scripted fake LLM, harness check and not a model result",False,17,0.4706,0.1176,0.6406,0.5882,17,0,0

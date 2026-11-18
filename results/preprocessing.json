@@ -1,0 +1,32 @@
+{
+  "pii_redaction": {
+    "tickets": 3000,
+    "injected_values": 2838,
+    "values_still_present": 0,
+    "recall": 1.0,
+    "tickets_without_pii": 1377,
+    "tickets_without_pii_modified": 0
+  },
+  "language_detection": {
+    "tickets": 3000,
+    "accuracy": 0.9977,
+    "per_language": {
+      "de": {
+        "n": 473,
+        "accuracy": 0.9894
+      },
+      "en": {
+        "n": 1456,
+        "accuracy": 1.0
+      },
+      "es": {
+        "n": 509,
+        "accuracy": 1.0
+      },
+      "fr": {
+        "n": 562,
+        "accuracy": 0.9964
+      }
+    }
+  }
+}

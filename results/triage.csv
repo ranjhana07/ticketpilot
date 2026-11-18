@@ -1,0 +1,7 @@
+task,model,n_train,n_test,n_classes,accuracy,macro_f1,weighted_f1,train_seconds,inference_ms_per_ticket
+bitext_intent,baseline,4050,1501,27,0.9973,0.9974,0.9973,5.0,0.18
+bitext_intent,transformer,4050,1501,27,0.978,0.9782,0.9781,1423.7,4.861
+synthetic_intent,baseline,4000,1200,12,1.0,1.0,1.0,3.6,0.43
+synthetic_intent,transformer,4000,1200,12,1.0,1.0,1.0,1342.9,12.18
+synthetic_priority,baseline,4000,1200,4,0.9342,0.9317,0.9341,4.5,0.463
+synthetic_priority,transformer,4000,1200,4,0.94,0.9374,0.94,1270.6,23.486
