@@ -50,7 +50,7 @@ def _priority_rank(raw: dict[str, Any]) -> int:
 
 def create_api(container: Container) -> FastAPI:
     helpdesk = container.helpdesk
-    app = FastAPI(title="ticketpilot", version="0.1.0")
+    app = FastAPI(title="ticketpilot", version="1.0.0")
 
     @app.exception_handler(HelpdeskError)
     async def helpdesk_error(_: Request, error: HelpdeskError) -> JSONResponse:

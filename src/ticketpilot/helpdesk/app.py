@@ -35,7 +35,7 @@ def create_app(db_path: str | Path = ":memory:", clock: Clock = utc_now, seed_da
         seed(database, clock())
         seed_demo_tickets(database, clock())
 
-    app = FastAPI(title="Loomwork helpdesk (mock)", version="0.1.0")
+    app = FastAPI(title="Loomwork helpdesk (mock)", version="1.0.0")
     app.state.service = service
     app.state.database = database
 
