@@ -94,6 +94,7 @@ All settings are environment variables, see `.env.example`.
 | `AUTO_REFUND_LIMIT_USD` | `50` | Refunds up to this total per ticket run without approval |
 | `MAX_REFUND_USD` | `500` | Refunds above this are denied and escalated |
 | `REFUND_WINDOW_DAYS` | `30` | Orders older than this cannot be refunded by support |
+| `DUPLICATE_THRESHOLD` | `0.8` | Cosine similarity above which two tickets are flagged as duplicates |
 | `AGENT_MAX_STEPS` | `8` | Cap on agent turns per ticket |
 
 ## Usage
@@ -149,3 +150,33 @@ Mock helpdesk (port 8001):
 | `GET /audit` | Audit log of every state change |
 
 Agent tools (LangChain `StructuredTool`): `lookup_customer`, `verify_identity`, `get_order`, `list_customer_orders`, `refund_order`, `reset_password`, `update_subscription`, `cancel_subscription`, `escalate_to_human`, `add_internal_note`, `search_knowledge_base`. The ticket id and the requester address are bound by the runtime and are not part of the schema the model sees.
+
+## Project layout
+
+```
+src/ticketpilot/
+  config.py              settings from environment variables
+  cli.py                 Typer entry point
+  embeddings.py          hashing and sentence-transformer embedders, cache
+  data/                  Bitext loader, synthetic ticket generator, splits
+  triage/                pii, language, sentiment, classifiers, duplicates, pipeline
+  kb/                    loader, chunking, bm25, dense index, rrf, reranker, retriever
+  helpdesk/              mock helpdesk: schema, service, FastAPI app, seed data
+  agent/                 tools, policy engine, LangGraph graph, runner, LLM factory, fakes
+  api/                   inbox API, container wiring, static UI (html, css, js)
+  evaluation/            triage, retrieval, duplicate, preprocessing and agent evaluations
+knowledge_base/          32 help center articles (markdown)
+eval/                    labelled retrieval queries
+results/                 raw outputs of the evaluation scripts
+tests/                   pytest suite
+```
+
+## Testing
+
+```
+pytest
+```
+
+The suite needs no network, API keys or running services. It uses FastAPI's test client for the helpdesk and the inbox API, a hashing embedder instead of MiniLM, and fake chat models (a queued model that replays tool calls, and the scripted support model) instead of Anthropic. It covers the PII rules, language and sentiment scoring, BM25 and fusion, duplicate detection, the helpdesk endpoints, tool schemas, every policy rule, graph routing including the approval interrupt and resume, the inbox API and the evaluation helpers.
+
+`python -m compileall src tests` and `node --check src/ticketpilot/api/static/app.js` are also clean.
